@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ClientPage extends StatefulWidget {
-  const ClientPage({super.key});
+  const ClientPage({Key? key}) : super(key: key);
 
   @override
   _ClientPageState createState() => _ClientPageState();
@@ -9,6 +9,27 @@ class ClientPage extends StatefulWidget {
 
 class _ClientPageState extends State<ClientPage> {
   List<Client> clients = [];
+  // Sample list of salon services
+  static List<String> salonServices = [
+    'Haircut',
+    'Hair Color',
+    'Manicure',
+    'Pedicure',
+    'Facial',
+    'Massage',
+  ];
+
+  // Map to store the checked state of each service
+  Map<String, bool> serviceCheckboxes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize all services as unchecked
+    for (String service in salonServices) {
+      serviceCheckboxes[service] = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +59,7 @@ class _ClientPageState extends State<ClientPage> {
         children: [
           Text('Phone Number: ${client.phoneNumber}'),
           Text('Last Visit Date: ${client.lastVisitDate}'),
+          Text('Services: ${client.services.join(", ")}'),
         ],
       ),
       trailing: ElevatedButton(
@@ -56,43 +78,71 @@ class _ClientPageState extends State<ClientPage> {
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Add Client'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+        return StatefulBuilder(
+          builder: (context, setStateInsideDialog) {
+            return AlertDialog(
+              title: Text('Add Client'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(labelText: 'Name'),
+                  ),
+                  TextField(
+                    controller: phoneNumberController,
+                    decoration: InputDecoration(labelText: 'Phone Number'),
+                  ),
+                  // Add checkboxes for services
+                  for (String service in salonServices)
+                    CheckboxListTile(
+                      title: Text(service),
+                      value: serviceCheckboxes[service] ?? false,
+                      onChanged: (bool? value) {
+                        setStateInsideDialog(() {
+                          serviceCheckboxes[service] = value ?? false;
+                        });
+                      },
+                    ),
+                ],
               ),
-              TextField(
-                controller: phoneNumberController,
-                decoration: InputDecoration(labelText: 'Phone Number'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Add the new client to the list
-                final name = nameController.text;
-                final phoneNumber = phoneNumberController.text;
-                final lastVisitDate = DateTime.now()
-                    .toString(); // You can replace this with the actual last visit date logic
-                setState(() {
-                  clients.add(Client(name, phoneNumber, lastVisitDate));
-                });
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Add'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Add the new client to the list
+                    final name = nameController.text;
+                    final phoneNumber = phoneNumberController.text;
+                    final lastVisitDate =
+                        DateTime.now().toString(); // Replace with actual logic
+                    final selectedServiceList = <String>[];
+                    // Collect the selected services
+                    for (String service in salonServices) {
+                      if (serviceCheckboxes[service] ?? false) {
+                        selectedServiceList.add(service);
+                      }
+                    }
+                    setState(() {
+                      clients.add(
+                        Client(name, phoneNumber, lastVisitDate,
+                            selectedServiceList),
+                      );
+                      for (String service in salonServices) {
+                        serviceCheckboxes[service] = false;
+                      }
+                    });
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text('Add'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -103,6 +153,7 @@ class Client {
   final String name;
   final String phoneNumber;
   final String lastVisitDate;
+  final List<String> services;
 
-  Client(this.name, this.phoneNumber, this.lastVisitDate);
+  Client(this.name, this.phoneNumber, this.lastVisitDate, this.services);
 }
