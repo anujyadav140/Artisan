@@ -44,6 +44,7 @@ class _ClientPageState extends State<ClientPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Client Page'),
       ),
       body: ListView.builder(
@@ -141,8 +142,8 @@ class _ClientPageState extends State<ClientPage> {
               child: Column(
                 children: [
                   for (int i = 0; i < client.visitDates.length; i++)
-                    _buildVisitCard(
-                        client.visitDates[i], client.pastServices[i]),
+                    _buildVisitCard(client.visitDates[i],
+                        client.pastServices[i], client.pastAmounts[i]),
                 ],
               ),
             ),
@@ -249,7 +250,8 @@ class _ClientPageState extends State<ClientPage> {
     return sections;
   }
 
-  Widget _buildVisitCard(String visitDate, List<String> pastServices) {
+  Widget _buildVisitCard(
+      String visitDate, List<String> pastServices, String pastAmounts) {
     return Card(
       margin: EdgeInsets.all(8),
       child: Padding(
@@ -259,6 +261,7 @@ class _ClientPageState extends State<ClientPage> {
           children: [
             Text('Visit Date: $visitDate'),
             Text('Past Services: ${pastServices.join(", ")}'),
+            Text('Amount Spent: $pastAmounts'),
           ],
         ),
       ),
