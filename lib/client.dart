@@ -78,7 +78,7 @@ class _ClientPageState extends State<ClientPage> {
         children: [
           Text('Phone Number: ${client.phoneNumber}'),
           Text('Last Visit Date: ${client.lastVisitDate}'),
-          Text('Services: ${client.services.join(", ")}'),
+          Text('Services: ${client.pastServices.join(", ")}'),
         ],
       ),
       trailing: Row(
@@ -99,7 +99,8 @@ class _ClientPageState extends State<ClientPage> {
               phoneNumberController.text = client.phoneNumber;
               // Check the appropriate service checkboxes
               for (String service in salonServices) {
-                serviceCheckboxes[service] = client.services.contains(service);
+                serviceCheckboxes[service] =
+                    client.pastServices.contains(service);
               }
               _showAddClientDialog();
             },
@@ -177,21 +178,22 @@ class _ClientPageState extends State<ClientPage> {
                     } else {
                       // Edit an existing client
                       lastVisitDate.add(DateTime.now().toString());
-                      // Collect the selected services
-                      List<String> selectedServices = [];
-                      for (String service in salonServices) {
-                        if (serviceCheckboxes[service] ?? false) {
-                          selectedServices.add(service);
-                        }
+
+                      // If there are past services, add them to the existing ones
+                      if (clients[editingIndex].pastServices != null) {
+                        clients[editingIndex]
+                            .pastServices
+                            .add(selectedServiceList);
+                      } else {
+                        clients[editingIndex].pastServices = [
+                          selectedServiceList
+                        ];
                       }
-                      pastServices.add(selectedServices);
+
                       setState(() {
-                        clients[editingIndex] = Client(
-                          name,
-                          phoneNumber,
-                          lastVisitDate,
-                          pastServices,
-                        );
+                        // No need to recreate the entire Client object, just update pastServices
+                        clients[editingIndex].pastServices =
+                            clients[editingIndex].pastServices;
                       });
                     }
 
@@ -221,7 +223,7 @@ class Client {
   final String name;
   final String phoneNumber;
   final List<dynamic> lastVisitDate;
-  final List<List<String>> services;
+  List<List<String>> pastServices; // Updated to store past services
 
-  Client(this.name, this.phoneNumber, this.lastVisitDate, this.services);
+  Client(this.name, this.phoneNumber, this.lastVisitDate, this.pastServices);
 }
