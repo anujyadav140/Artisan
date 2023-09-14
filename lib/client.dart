@@ -154,8 +154,8 @@ class _ClientPageState extends State<ClientPage> {
                     // Create a new client or update the existing one
                     final name = nameController.text;
                     final phoneNumber = phoneNumberController.text;
-                    final lastVisitDate =
-                        DateTime.now().toString(); // Replace with actual logic
+                    final lastVisitDate = [];
+                    lastVisitDate.add(DateTime.now().toString());
                     final selectedServiceList = <String>[];
                     // Collect the selected services
                     for (String service in salonServices) {
@@ -176,6 +176,13 @@ class _ClientPageState extends State<ClientPage> {
                       });
                     } else {
                       // Edit an existing client
+                      lastVisitDate.add(DateTime.now().toString());
+                      // Collect the selected services
+                      for (String service in salonServices) {
+                        if (serviceCheckboxes[service] ?? false) {
+                          selectedServiceList.add(service);
+                        }
+                      }
                       setState(() {
                         clients[editingIndex] = Client(
                           name,
@@ -211,7 +218,7 @@ class _ClientPageState extends State<ClientPage> {
 class Client {
   final String name;
   final String phoneNumber;
-  final String lastVisitDate;
+  final List<dynamic> lastVisitDate;
   final List<String> services;
 
   Client(this.name, this.phoneNumber, this.lastVisitDate, this.services);
