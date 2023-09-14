@@ -110,6 +110,14 @@ class _ClientPageState extends State<ClientPage> {
             },
             child: Text('Edit'),
           ),
+          SizedBox(width: 10),
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              // Add your reminder functionality here
+              // This can open a dialog or navigate to a reminder setup page, for example.
+            },
+          ),
         ],
       ),
     );
@@ -192,8 +200,8 @@ class _ClientPageState extends State<ClientPage> {
                 width: 300,
                 child: LineChart(
                   LineChartData(
-                    gridData: FlGridData(show: false),
-                    titlesData: FlTitlesData(show: false),
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
                     borderData: FlBorderData(
                       show: true,
                       border: Border.all(
