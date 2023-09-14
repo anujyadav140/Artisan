@@ -10,6 +10,7 @@ class ClientPage extends StatefulWidget {
 
 class _ClientPageState extends State<ClientPage> {
   List<Client> clients = [];
+  var money = '';
   // Sample list of salon services
   static List<String> salonServices = [
     'Haircut',
@@ -80,6 +81,7 @@ class _ClientPageState extends State<ClientPage> {
           Text('Phone Number: ${client.phoneNumber}'),
           Text('Last Visit Date: ${client.visitDates}'),
           Text('Services: ${client.pastServices.join(", ")}'),
+          Text('Amount Last Spent: ${client.pastAmounts}'),
         ],
       ),
       trailing: Row(
@@ -263,12 +265,38 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
+  double calculateTotalSpend(List<String> selectedServices) {
+    // Define the prices for each service
+    final Map<String, double> servicePrices = {
+      'Haircut': 20.0,
+      'Hair Color': 50.0,
+      'Manicure': 15.0,
+      'Pedicure': 20.0,
+      'Facial': 30.0,
+      'Massage': 40.0,
+    };
+
+    double totalSpend = 0.0;
+
+    for (String service in selectedServices) {
+      if (servicePrices.containsKey(service)) {
+        totalSpend += servicePrices[service]!;
+      }
+    }
+
+    return totalSpend;
+  }
+
   Future<void> _showAddClientDialog() async {
     await showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateInsideDialog) {
+            money = calculateTotalSpend(serviceCheckboxes.keys
+                    .where((key) => serviceCheckboxes[key]!)
+                    .toList())
+                .toStringAsFixed(2);
             return AlertDialog(
               title: Text(editingIndex == -1 ? 'Add Client' : 'Edit Client'),
               content: Column(
@@ -293,6 +321,13 @@ class _ClientPageState extends State<ClientPage> {
                         });
                       },
                     ),
+                  Text(
+                    'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               actions: [
@@ -324,6 +359,7 @@ class _ClientPageState extends State<ClientPage> {
                           phoneNumber,
                           [visitDate], // Add the new visit date
                           [selectedServiceList],
+                          [money],
                         ));
                       });
                     } else {
@@ -342,6 +378,11 @@ class _ClientPageState extends State<ClientPage> {
                         clients[editingIndex].pastServices = [
                           selectedServiceList
                         ];
+                      }
+                      if (clients[editingIndex].pastAmounts != null) {
+                        clients[editingIndex].pastAmounts.add(money);
+                      } else {
+                        clients[editingIndex].pastAmounts = [money];
                       }
 
                       setState(() {
@@ -380,6 +421,7 @@ class Client {
   final String phoneNumber;
   List<dynamic> visitDates; // Updated to store all visit dates
   List<List<String>> pastServices; // Updated to store past services
-
-  Client(this.name, this.phoneNumber, this.visitDates, this.pastServices);
+  List<dynamic> pastAmounts;
+  Client(this.name, this.phoneNumber, this.visitDates, this.pastServices,
+      this.pastAmounts);
 }
