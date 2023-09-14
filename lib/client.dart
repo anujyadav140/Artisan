@@ -77,7 +77,7 @@ class _ClientPageState extends State<ClientPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Phone Number: ${client.phoneNumber}'),
-          Text('Last Visit Date: ${client.lastVisitDate}'),
+          Text('Last Visit Date: ${client.visitDates}'),
           Text('Services: ${client.pastServices.join(", ")}'),
         ],
       ),
@@ -155,8 +155,6 @@ class _ClientPageState extends State<ClientPage> {
                     // Create a new client or update the existing one
                     final name = nameController.text;
                     final phoneNumber = phoneNumberController.text;
-                    final lastVisitDate = [];
-                    lastVisitDate.add(DateTime.now().toString());
                     final selectedServiceList = <String>[];
                     // Collect the selected services
                     for (String service in salonServices) {
@@ -168,16 +166,20 @@ class _ClientPageState extends State<ClientPage> {
                     if (editingIndex == -1) {
                       // Add a new client
                       setState(() {
+                        final visitDate = DateTime.now().toString();
                         clients.add(Client(
                           name,
                           phoneNumber,
-                          lastVisitDate,
+                          [visitDate], // Add the new visit date
                           [selectedServiceList],
                         ));
                       });
                     } else {
                       // Edit an existing client
-                      lastVisitDate.add(DateTime.now().toString());
+                      final visitDate = DateTime.now().toString();
+                      clients[editingIndex]
+                          .visitDates
+                          .add(visitDate); // Add the new visit date
 
                       // If there are past services, add them to the existing ones
                       if (clients[editingIndex].pastServices != null) {
@@ -191,7 +193,9 @@ class _ClientPageState extends State<ClientPage> {
                       }
 
                       setState(() {
-                        // No need to recreate the entire Client object, just update pastServices
+                        // No need to recreate the entire Client object, just update visitDates and pastServices
+                        clients[editingIndex].visitDates =
+                            clients[editingIndex].visitDates;
                         clients[editingIndex].pastServices =
                             clients[editingIndex].pastServices;
                       });
@@ -222,8 +226,8 @@ class _ClientPageState extends State<ClientPage> {
 class Client {
   final String name;
   final String phoneNumber;
-  final List<dynamic> lastVisitDate;
+  List<dynamic> visitDates; // Updated to store all visit dates
   List<List<String>> pastServices; // Updated to store past services
 
-  Client(this.name, this.phoneNumber, this.lastVisitDate, this.pastServices);
+  Client(this.name, this.phoneNumber, this.visitDates, this.pastServices);
 }
