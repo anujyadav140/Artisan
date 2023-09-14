@@ -179,6 +179,16 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   void _showStatisticsDialog(Client client) {
+    List<dynamic> _generateLineChartData(List<dynamic> pastAmounts) {
+      final List<dynamic> data = [];
+      for (int i = 0; i < pastAmounts.length; i++) {
+        final double y = double.parse(pastAmounts[i].toString());
+        final String x = client.visitDates[i];
+        data.add({'date': x, 'amount': y});
+      }
+      return data;
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -207,24 +217,21 @@ class _ClientPageState extends State<ClientPage> {
               SizedBox(
                 height: 200,
                 width: 300,
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: const FlTitlesData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _generateLineChartSpots(client.pastAmounts),
-                        isCurved: true,
-                        color: Colors.purple,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(show: false),
-                      ),
-                    ],
+                child: SfCartesianChart(
+                  title: ChartTitle(text: 'Client Spending Over Time'),
+                  primaryXAxis: CategoryAxis(),
+                  primaryYAxis: NumericAxis(
+                    title: AxisTitle(text: 'Amount Spent'),
                   ),
-                  duration: const Duration(milliseconds: 150),
-                  curve: Curves.linear,
+                  series: <ChartSeries>[
+                    LineSeries<dynamic, String>(
+                      dataSource: _generateLineChartData(client.pastAmounts),
+                      xValueMapper: (dynamic data, _) => data['date'],
+                      yValueMapper: (dynamic data, _) => data['amount'],
+                    ),
+                  ],
                 ),
-              ),
+              )
             ],
           ),
           actions: [
