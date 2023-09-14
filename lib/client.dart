@@ -162,13 +162,11 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   void _showStatisticsDialog(Client client) {
-    // Calculate and display statistics here
-    // You can customize this dialog as needed for your statistics
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Statistics'),
+          title: const Text('Statistics'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,9 +180,39 @@ class _ClientPageState extends State<ClientPage> {
                   PieChartData(
                     sections: _generatePieChartSections(client),
                   ),
-                  swapAnimationDuration:
-                      Duration(milliseconds: 150), // Optional
-                  swapAnimationCurve: Curves.linear, // Optional
+                  swapAnimationDuration: const Duration(milliseconds: 150),
+                  swapAnimationCurve: Curves.linear,
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                height: 200,
+                width: 300,
+                child: LineChart(
+                  LineChartData(
+                    gridData: FlGridData(show: false),
+                    titlesData: FlTitlesData(show: false),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 1,
+                      ),
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: _generateLineChartSpots(client.pastAmounts),
+                        isCurved: true,
+                        color: Colors.purple,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.linear,
                 ),
               ),
             ],
@@ -200,6 +228,19 @@ class _ClientPageState extends State<ClientPage> {
         );
       },
     );
+  }
+
+  List<FlSpot> _generateLineChartSpots(List<dynamic> pastAmounts) {
+    // Generate FlSpot data for the LineChart from pastAmounts
+    final List<FlSpot> spots = [];
+
+    for (int i = 0; i < pastAmounts.length; i++) {
+      final double x = i.toDouble();
+      final double y = double.parse(pastAmounts[i].toString());
+      spots.add(FlSpot(x, y));
+    }
+
+    return spots;
   }
 
   List<PieChartSectionData> _generatePieChartSections(Client client) {
