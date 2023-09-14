@@ -199,31 +199,6 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  // List<PieChartSectionData> _generatePieChartSections(Client client) {
-  //   // Calculate data for PieChart sections
-  //   // You can customize this as per your statistics logic
-  //   final totalVisits = client.visitDates.length;
-  //   final pastServicesCount = client.pastServices.length;
-
-  //   // For simplicity, we'll create two sections: Visits and Past Services
-  //   final List<PieChartSectionData> sections = [
-  //     PieChartSectionData(
-  //       title: 'Visits',
-  //       value: totalVisits.toDouble(),
-  //       color: Colors.blue,
-  //       radius: 40,
-  //     ),
-  //     PieChartSectionData(
-  //       title: 'Past Services',
-  //       value: pastServicesCount.toDouble(),
-  //       color: Colors.green,
-  //       radius: 40,
-  //     ),
-  //   ];
-
-  //   return sections;
-  // }
-
   List<PieChartSectionData> _generatePieChartSections(Client client) {
     // Calculate data for PieChart sections based on most frequently taken services
     // You can customize this as per your statistics logic
