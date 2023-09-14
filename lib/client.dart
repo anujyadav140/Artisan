@@ -28,7 +28,7 @@ class _ClientPageState extends State<ClientPage> {
 
   // Index of the client being edited
   int editingIndex = -1;
-
+  List<List<String>> pastServices = [];
   @override
   void initState() {
     super.initState();
@@ -171,24 +171,26 @@ class _ClientPageState extends State<ClientPage> {
                           name,
                           phoneNumber,
                           lastVisitDate,
-                          selectedServiceList,
+                          [selectedServiceList],
                         ));
                       });
                     } else {
                       // Edit an existing client
                       lastVisitDate.add(DateTime.now().toString());
                       // Collect the selected services
+                      List<String> selectedServices = [];
                       for (String service in salonServices) {
                         if (serviceCheckboxes[service] ?? false) {
-                          selectedServiceList.add(service);
+                          selectedServices.add(service);
                         }
                       }
+                      pastServices.add(selectedServices);
                       setState(() {
                         clients[editingIndex] = Client(
                           name,
                           phoneNumber,
                           lastVisitDate,
-                          selectedServiceList,
+                          pastServices,
                         );
                       });
                     }
@@ -219,7 +221,7 @@ class Client {
   final String name;
   final String phoneNumber;
   final List<dynamic> lastVisitDate;
-  final List<String> services;
+  final List<List<String>> services;
 
   Client(this.name, this.phoneNumber, this.lastVisitDate, this.services);
 }
