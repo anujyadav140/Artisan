@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ClientPage extends StatefulWidget {
   const ClientPage({Key? key}) : super(key: key);
@@ -83,34 +84,42 @@ class _ClientPageState extends State<ClientPage> {
           Text('Last Visit Date: ${client.visitDates}'),
           Text('Services: ${client.pastServices.join(", ")}'),
           Text('Amount Last Spent: ${client.pastAmounts}'),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    _showClientHistoryDialog(
+                        client); // Show client history dialog
+                  },
+                  child: Text('Client History'),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Set editing index and populate the text fields
+                  editingIndex = index;
+                  nameController.text = client.name;
+                  phoneNumberController.text = client.phoneNumber;
+                  // Check the appropriate service checkboxes
+                  for (String service in salonServices) {
+                    serviceCheckboxes[service] =
+                        client.pastServices.contains(service);
+                  }
+                  _showAddClientDialog();
+                },
+                child: Text('Update'),
+              ),
+            ],
+          ),
         ],
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              _showClientHistoryDialog(client); // Show client history dialog
-            },
-            child: Text('Client History'),
-          ),
-          SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () {
-              // Set editing index and populate the text fields
-              editingIndex = index;
-              nameController.text = client.name;
-              phoneNumberController.text = client.phoneNumber;
-              // Check the appropriate service checkboxes
-              for (String service in salonServices) {
-                serviceCheckboxes[service] =
-                    client.pastServices.contains(service);
-              }
-              _showAddClientDialog();
-            },
-            child: Text('Edit'),
-          ),
-          SizedBox(width: 10),
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
@@ -202,13 +211,6 @@ class _ClientPageState extends State<ClientPage> {
                   LineChartData(
                     gridData: const FlGridData(show: false),
                     titlesData: const FlTitlesData(show: false),
-                    borderData: FlBorderData(
-                      show: true,
-                      border: Border.all(
-                        color: Colors.blue,
-                        width: 1,
-                      ),
-                    ),
                     lineBarsData: [
                       LineChartBarData(
                         spots: _generateLineChartSpots(client.pastAmounts),
