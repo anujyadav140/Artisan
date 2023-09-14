@@ -22,6 +22,13 @@ class _ClientPageState extends State<ClientPage> {
   // Map to store the checked state of each service
   Map<String, bool> serviceCheckboxes = {};
 
+  // Text editing controllers for the name and phone number fields
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneNumberController = TextEditingController();
+
+  // Index of the client being edited
+  int editingIndex = -1;
+
   @override
   void initState() {
     super.initState();
@@ -41,17 +48,29 @@ class _ClientPageState extends State<ClientPage> {
         itemCount: clients.length,
         itemBuilder: (context, index) {
           final client = clients[index];
-          return _buildClientListItem(client);
+          return _buildClientListItem(client, index);
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddClientDialog,
+        onPressed: () {
+          // Reset the editing index and clear text fields
+          editingIndex = -1;
+          nameController.clear();
+          phoneNumberController.clear();
+          // Reset service checkboxes
+          setState(() {
+            for (String service in salonServices) {
+              serviceCheckboxes[service] = false;
+            }
+          });
+          _showAddClientDialog();
+        },
         child: Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildClientListItem(Client client) {
+  Widget _buildClientListItem(Client client, int index) {
     return ListTile(
       title: Text(client.name),
       subtitle: Column(
@@ -62,26 +81,43 @@ class _ClientPageState extends State<ClientPage> {
           Text('Services: ${client.services.join(", ")}'),
         ],
       ),
-      trailing: ElevatedButton(
-        onPressed: () {
-          // Handle client history button click here
-        },
-        child: Text('Client History'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // Handle client history button click here
+            },
+            child: Text('Client History'),
+          ),
+          SizedBox(width: 10),
+          ElevatedButton(
+            onPressed: () {
+              // Set editing index and populate the text fields
+              editingIndex = index;
+              nameController.text = client.name;
+              phoneNumberController.text = client.phoneNumber;
+              // Check the appropriate service checkboxes
+              for (String service in salonServices) {
+                serviceCheckboxes[service] = client.services.contains(service);
+              }
+              _showAddClientDialog();
+            },
+            child: Text('Edit'),
+          ),
+        ],
       ),
     );
   }
 
   Future<void> _showAddClientDialog() async {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController phoneNumberController = TextEditingController();
-
     await showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateInsideDialog) {
             return AlertDialog(
-              title: Text('Add Client'),
+              title: Text(editingIndex == -1 ? 'Add Client' : 'Edit Client'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -115,7 +151,7 @@ class _ClientPageState extends State<ClientPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Add the new client to the list
+                    // Create a new client or update the existing one
                     final name = nameController.text;
                     final phoneNumber = phoneNumberController.text;
                     final lastVisitDate =
@@ -127,18 +163,41 @@ class _ClientPageState extends State<ClientPage> {
                         selectedServiceList.add(service);
                       }
                     }
-                    setState(() {
-                      clients.add(
-                        Client(name, phoneNumber, lastVisitDate,
-                            selectedServiceList),
-                      );
-                      for (String service in salonServices) {
-                        serviceCheckboxes[service] = false;
-                      }
-                    });
+
+                    if (editingIndex == -1) {
+                      // Add a new client
+                      setState(() {
+                        clients.add(Client(
+                          name,
+                          phoneNumber,
+                          lastVisitDate,
+                          selectedServiceList,
+                        ));
+                      });
+                    } else {
+                      // Edit an existing client
+                      setState(() {
+                        clients[editingIndex] = Client(
+                          name,
+                          phoneNumber,
+                          lastVisitDate,
+                          selectedServiceList,
+                        );
+                      });
+                    }
+
+                    // Reset editing index and text fields
+                    editingIndex = -1;
+                    nameController.clear();
+                    phoneNumberController.clear();
+                    // Reset service checkboxes
+                    for (String service in salonServices) {
+                      serviceCheckboxes[service] = false;
+                    }
+
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: Text('Add'),
+                  child: Text(editingIndex == -1 ? 'Add' : 'Save'),
                 ),
               ],
             );
