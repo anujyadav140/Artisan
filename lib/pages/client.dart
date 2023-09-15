@@ -162,6 +162,7 @@ class _ClientPageState extends State<ClientPage> {
     }
     String latestSpentAmount = amounts.last;
     List<String> latestServicesAvailed = servicesList.last;
+    List<DateTime> dateTimes = [];
     return ListTile(
       title: Text(
         name,
@@ -256,17 +257,14 @@ class _ClientPageState extends State<ClientPage> {
                     builder: (context, setState) {
                       return AlertDialog(
                         title: Text(
-                          'Pick Date & Time',
+                          'Reminder',
                           style: TextStyle(
-                            fontSize: _ClientPageState().isWeb(context)
-                                ? w / 80
-                                : w / 30,
+                            fontSize: isWeb(context) ? w / 80 : w / 30,
                           ),
                         ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(
-                            Radius.circular(
-                                10.0), // Adjust the radius as needed
+                            Radius.circular(10.0),
                           ),
                         ),
                         content: SizedBox(
@@ -274,21 +272,45 @@ class _ClientPageState extends State<ClientPage> {
                           height: h * 0.4,
                           child: Column(
                             children: [
-                              ElevatedButton(
+                              ElevatedButton.icon(
                                 onPressed: () async {
                                   final date = await pickDate();
-                                  if (date == null) return;
-                                  setState(
-                                    () => dateTime = date,
-                                  );
+                                  if (date != null) {
+                                    setState(() {
+                                      dateTimes.add(date);
+                                    });
+                                  }
                                 },
-                                child: Text(
-                                  '${dateTime.day}/${dateTime.month}/${dateTime.year}',
-                                  style: TextStyle(
-                                    fontSize: _ClientPageState().isWeb(context)
-                                        ? w / 60
-                                        : w / 30,
-                                  ),
+                                icon: Icon(Icons.add),
+                                label: Text('Add'),
+                              ),
+                              SizedBox(height: 20),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: dateTimes.length,
+                                  itemBuilder: (context, index) {
+                                    final dateTime = dateTimes[index];
+                                    return Card(
+                                      child: ListTile(
+                                        title: Text(
+                                          '${dateTime.day}/${dateTime.month}/${dateTime.year}',
+                                          style: TextStyle(
+                                            fontSize: isWeb(context)
+                                                ? w / 60
+                                                : w / 30,
+                                          ),
+                                        ),
+                                        trailing: IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: () {
+                                            setState(() {
+                                              dateTimes.removeAt(index);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -611,7 +633,8 @@ class _ClientPageState extends State<ClientPage> {
                 title: Text(
                   editingIndex == -1 ? 'Add Client' : 'Edit Client',
                   style: TextStyle(
-                    fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                   ),
                 ),
                 content: Column(
@@ -622,8 +645,9 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Name',
                         labelStyle: TextStyle(
-                          fontSize:
-                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          fontSize: _ClientPageState().isWeb(context)
+                              ? w / 60
+                              : w / 30,
                         ),
                       ),
                     ),
@@ -632,8 +656,9 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: TextStyle(
-                          fontSize:
-                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          fontSize: _ClientPageState().isWeb(context)
+                              ? w / 60
+                              : w / 30,
                         ),
                       ),
                     ),
@@ -689,7 +714,7 @@ class _ClientPageState extends State<ClientPage> {
                           selectedServiceList.add(service);
                         }
                       }
-        
+
                       if (editingIndex == -1) {
                         // Add a new client
                         final visitDate = DateTime.now().toString();
