@@ -67,7 +67,10 @@ class _ClientPageState extends State<ClientPage> {
               itemCount: clientData.length,
               itemBuilder: (context, index) {
                 var clientData = snapshot.data!.docs;
-                return _buildClientListItem(clientData, index);
+                return Column(children: [
+                  _buildClientListItem(clientData, index),
+                  const Divider(),
+                ]);
               },
             );
           }),
@@ -93,16 +96,54 @@ class _ClientPageState extends State<ClientPage> {
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
     var client = clientData[index].data();
+    Map<String, dynamic> visits = client['visits'];
+
+// Variables to store the extracted data
+    List<String> visitDates = [];
+    List<Map<String, dynamic>> visitDataList = [];
+
+    // Sort the visits Map by date
+    List<MapEntry<String, dynamic>> sortedVisits = visits.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+// Clear existing data in visitDates and visitDataList
+    visitDates.clear();
+    visitDataList.clear();
+
+// Populate visitDates and visitDataList with sorted data
+    for (var entry in sortedVisits) {
+      visitDates.add(entry.key);
+      visitDataList.add(Map<String, dynamic>.from(entry.value));
+    }
+
+    String name = client['name'];
+    String phoneNumber = client['phoneNumber'];
+    String latestDate = visitDates.last;
+
+    List<String> amounts = [];
+    List<List<String>> servicesList = [];
+
+    for (Map<String, dynamic> visitData in visitDataList) {
+      String amount = visitData['amount'];
+      List<String> services = List<String>.from(visitData['services']);
+
+      amounts.add(amount);
+      servicesList.add(services);
+    }
+    print(amounts);
+    print(servicesList);
+    String latestSpentAmount = amounts.last;
+    List<String> latestServicesAvailed = servicesList.last;
     return ListTile(
-      title: Text(client['name']),
+      title: Text(name),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Phone Number: ${client['phoneNumber']}'),
-          // Text('Last Visit Date: ${client.visitDates}'),
-          // Text('Services: ${client.pastServices.join(", ")}'),
-          // Text('Amount Last Spent: ${client.pastAmounts}'),
-          SizedBox(height: 10),
+          Text('Phone Number: $phoneNumber'),
+          Text('Last Visit Date: $latestDate'),
+          Text('Services: ${latestServicesAvailed.join(", ")}'),
+          Text('Amount Last Spent: $latestSpentAmount'),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -110,8 +151,8 @@ class _ClientPageState extends State<ClientPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    // _showClientHistoryDialog(
-                    //     client); // Show client history dialog
+                    _showClientHistoryDialog(name, visitDates, servicesList,
+                        amounts); // Show client history dialog
                   },
                   child: Text('Client History'),
                 ),
@@ -120,12 +161,11 @@ class _ClientPageState extends State<ClientPage> {
                 onPressed: () {
                   // Set editing index and populate the text fields
                   editingIndex = index;
-                  // nameController.text = client.name;
-                  // phoneNumberController.text = client.phoneNumber;
+                  nameController.text = name;
+                  phoneNumberController.text = phoneNumber;
                   // Check the appropriate service checkboxes
                   for (String service in salonServices) {
-                    // serviceCheckboxes[service] =
-                    //     client.pastServices.contains(service);
+                    serviceCheckboxes[service] = false;
                   }
                   _showAddClientDialog();
                 },
@@ -153,7 +193,8 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  void _showClientHistoryDialog(Client client) {
+  void _showClientHistoryDialog(String name, List<String> visitDates,
+      List<List<String>> servicesList, List<String> amounts) {
     showDialog(
       context: context,
       builder: (context) {
@@ -166,9 +207,8 @@ class _ClientPageState extends State<ClientPage> {
               ElevatedButton(
                 onPressed: () {
                   // Show the statistics popup
-                  Navigator.of(context)
-                      .pop(); // Close the client history dialog
-                  _showStatisticsDialog(client);
+                  _showStatisticsDialog(
+                      name, visitDates, amounts, servicesList);
                 },
                 child: Text('Statistics'),
               ),
@@ -179,9 +219,8 @@ class _ClientPageState extends State<ClientPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  for (int i = 0; i < client.visitDates.length; i++)
-                    _buildVisitCard(client.visitDates[i],
-                        client.pastServices[i], client.pastAmounts[i]),
+                  for (int i = 0; i < visitDates.length; i++)
+                    _buildVisitCard(visitDates[i], servicesList[i], amounts[i]),
                 ],
               ),
             ),
@@ -199,7 +238,8 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  void _showStatisticsDialog(Client client) {
+  void _showStatisticsDialog(String name, List<String> visitDates,
+      List<String> pastAmounts, List<List<String>> servicesList) {
     List<dynamic> _generateLineChartData(List<dynamic> pastAmounts) {
       final List<dynamic> data = [];
       for (int i = 0; i < pastAmounts.length; i++) {
@@ -219,14 +259,14 @@ class _ClientPageState extends State<ClientPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Client Name: ${client.name}'),
-              Text('Total Visits: ${client.visitDates.length}'),
+              Text('Client Name: $name'),
+              Text('Total Visits: ${visitDates.length}'),
               SizedBox(
                 height: 200,
                 width: 300,
                 child: PieChart(
                   PieChartData(
-                    sections: _generatePieChartSections(client),
+                    sections: _generatePieChartSections(servicesList),
                   ),
                   swapAnimationDuration: const Duration(milliseconds: 150),
                   swapAnimationCurve: Curves.linear,
@@ -247,7 +287,7 @@ class _ClientPageState extends State<ClientPage> {
                   ),
                   series: <ChartSeries>[
                     LineSeries<dynamic, String>(
-                      dataSource: _generateLineChartData(client.pastAmounts),
+                      dataSource: _generateLineChartData(pastAmounts),
                       xValueMapper: (dynamic data, _) => data['date'],
                       yValueMapper: (dynamic data, _) => data['amount'],
                     ),
@@ -282,7 +322,8 @@ class _ClientPageState extends State<ClientPage> {
     return spots;
   }
 
-  List<PieChartSectionData> _generatePieChartSections(Client client) {
+  List<PieChartSectionData> _generatePieChartSections(
+      List<List<String>> pastServices) {
     // Calculate data for PieChart sections based on most frequently taken services
     // You can customize this as per your statistics logic
 
@@ -290,7 +331,7 @@ class _ClientPageState extends State<ClientPage> {
     final Map<String, int> serviceFrequency = {};
 
     // Iterate through each visit's past services and count their frequency
-    for (final visitServices in client.pastServices) {
+    for (final visitServices in pastServices) {
       for (final service in visitServices) {
         serviceFrequency[service] = (serviceFrequency[service] ?? 0) + 1;
       }
