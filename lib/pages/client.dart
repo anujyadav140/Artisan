@@ -1,4 +1,6 @@
 import 'package:artisan/services/authentication/auth_service.dart';
+import 'package:artisan/services/client_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
@@ -50,13 +52,25 @@ class _ClientPageState extends State<ClientPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Client Page'),
       ),
-      body: ListView.builder(
-        itemCount: clients.length,
-        itemBuilder: (context, index) {
-          final client = clients[index];
-          return _buildClientListItem(client, index);
-        },
-      ),
+      body: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('Clients').snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator(); // Loading indicator while data is being fetched.
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Text('No data available'); // Handle empty data.
+            }
+            var clientData = snapshot.data!.docs;
+
+            return ListView.builder(
+              itemCount: clientData.length,
+              itemBuilder: (context, index) {
+                var clientData = snapshot.data!.docs;
+                return _buildClientListItem(clientData, index);
+              },
+            );
+          }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Reset the editing index and clear text fields
@@ -76,16 +90,18 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  Widget _buildClientListItem(Client client, int index) {
+  Widget _buildClientListItem(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    var client = clientData[index].data();
     return ListTile(
-      title: Text(client.name),
+      title: Text(client['name']),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Phone Number: ${client.phoneNumber}'),
-          Text('Last Visit Date: ${client.visitDates}'),
-          Text('Services: ${client.pastServices.join(", ")}'),
-          Text('Amount Last Spent: ${client.pastAmounts}'),
+          Text('Phone Number: ${client['phoneNumber']}'),
+          // Text('Last Visit Date: ${client.visitDates}'),
+          // Text('Services: ${client.pastServices.join(", ")}'),
+          // Text('Amount Last Spent: ${client.pastAmounts}'),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -94,8 +110,8 @@ class _ClientPageState extends State<ClientPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    _showClientHistoryDialog(
-                        client); // Show client history dialog
+                    // _showClientHistoryDialog(
+                    //     client); // Show client history dialog
                   },
                   child: Text('Client History'),
                 ),
@@ -104,12 +120,12 @@ class _ClientPageState extends State<ClientPage> {
                 onPressed: () {
                   // Set editing index and populate the text fields
                   editingIndex = index;
-                  nameController.text = client.name;
-                  phoneNumberController.text = client.phoneNumber;
+                  // nameController.text = client.name;
+                  // phoneNumberController.text = client.phoneNumber;
                   // Check the appropriate service checkboxes
                   for (String service in salonServices) {
-                    serviceCheckboxes[service] =
-                        client.pastServices.contains(service);
+                    // serviceCheckboxes[service] =
+                    //     client.pastServices.contains(service);
                   }
                   _showAddClientDialog();
                 },
@@ -419,57 +435,15 @@ class _ClientPageState extends State<ClientPage> {
 
                     if (editingIndex == -1) {
                       // Add a new client
-                      setState(() {
-                        final visitDate = DateTime.now().toString();
-                        clients.add(Client(
-                          name,
-                          phoneNumber,
-                          [visitDate], // Add the new visit date
-                          [selectedServiceList],
-                          [money],
-                        ));
-                      });
+                      final visitDate = DateTime.now().toString();
+                      ClientService().clientEngagement(phoneNumber, name,
+                          visitDate, selectedServiceList, money);
                     } else {
                       // Edit an existing client
                       final visitDate = DateTime.now().toString();
-                      clients[editingIndex]
-                          .visitDates
-                          .add(visitDate); // Add the new visit date
-
-                      // If there are past services, add them to the existing ones
-                      if (clients[editingIndex].pastServices != null) {
-                        clients[editingIndex]
-                            .pastServices
-                            .add(selectedServiceList);
-                      } else {
-                        clients[editingIndex].pastServices = [
-                          selectedServiceList
-                        ];
-                      }
-                      if (clients[editingIndex].pastAmounts != null) {
-                        clients[editingIndex].pastAmounts.add(money);
-                      } else {
-                        clients[editingIndex].pastAmounts = [money];
-                      }
-
-                      setState(() {
-                        // No need to recreate the entire Client object, just update visitDates and pastServices
-                        clients[editingIndex].visitDates =
-                            clients[editingIndex].visitDates;
-                        clients[editingIndex].pastServices =
-                            clients[editingIndex].pastServices;
-                      });
+                      ClientService().clientEngagement(phoneNumber, name,
+                          visitDate, selectedServiceList, money);
                     }
-
-                    // Reset editing index and text fields
-                    editingIndex = -1;
-                    nameController.clear();
-                    phoneNumberController.clear();
-                    // Reset service checkboxes
-                    for (String service in salonServices) {
-                      serviceCheckboxes[service] = false;
-                    }
-
                     Navigator.of(context).pop(); // Close the dialog
                   },
                   child: Text(editingIndex == -1 ? 'Add' : 'Save'),
