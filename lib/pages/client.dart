@@ -274,12 +274,150 @@ class _ClientPageState extends State<ClientPage> {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () async {
-                                  final date = await pickDate();
-                                  if (date != null) {
-                                    setState(() {
-                                      dateTimes.add(date);
-                                    });
-                                  }
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      DateTime selectedDate = DateTime
+                                          .now(); // Initialize with the current date and time
+                                      TimeOfDay selectedTime = TimeOfDay.now();
+                                      String selectedService = 'Haircut';
+
+                                      return AlertDialog(
+                                        title: Text(
+                                          'Add Appointment',
+                                          style: TextStyle(
+                                            fontSize: isWeb(context)
+                                                ? w / 80
+                                                : w / 30,
+                                          ),
+                                        ),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ),
+                                        ),
+                                        content: SizedBox(
+                                          width: w * 0.4,
+                                          height: h * 0.6,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Date:',
+                                                style: TextStyle(
+                                                  fontSize: isWeb(context)
+                                                      ? w / 80
+                                                      : w / 30,
+                                                ),
+                                              ),
+                                              ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  final date = await pickDate();
+                                                  if (date != null) {
+                                                    setState(() {
+                                                      selectedDate = date;
+                                                    });
+                                                  }
+                                                },
+                                                icon:
+                                                    Icon(Icons.calendar_today),
+                                                label: Text(
+                                                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                                  style: TextStyle(
+                                                    fontSize: isWeb(context)
+                                                        ? w / 60
+                                                        : w / 30,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                'Time:',
+                                                style: TextStyle(
+                                                  fontSize: isWeb(context)
+                                                      ? w / 80
+                                                      : w / 30,
+                                                ),
+                                              ),
+                                              ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  // final time = await pickTime();
+                                                  // if (time != null) {
+                                                  //   setState(() {
+                                                  //     selectedTime = time;
+                                                  //   });
+                                                  // }
+                                                },
+                                                icon: Icon(Icons.access_time),
+                                                label: Text(
+                                                  '${selectedTime.format(context)}',
+                                                  style: TextStyle(
+                                                    fontSize: isWeb(context)
+                                                        ? w / 60
+                                                        : w / 30,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                'Select Service:',
+                                                style: TextStyle(
+                                                  fontSize: isWeb(context)
+                                                      ? w / 80
+                                                      : w / 30,
+                                                ),
+                                              ),
+                                              DropdownButton<String>(
+                                                value: selectedService,
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    selectedService = newValue!;
+                                                  });
+                                                },
+                                                items: <String>[
+                                                  'Haircut',
+                                                  'Coloring',
+                                                  'Styling',
+                                                  'Others'
+                                                ].map<DropdownMenuItem<String>>(
+                                                    (String value) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      // Handle OK button action, e.g., save appointment
+                                                      Navigator.of(context)
+                                                          .pop(); // Close this dialog
+                                                    },
+                                                    child: Text('OK'),
+                                                  ),
+                                                  SizedBox(width: 10),
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      // Handle Cancel button action, e.g., cancel appointment
+                                                      Navigator.of(context)
+                                                          .pop(); // Close this dialog
+                                                    },
+                                                    child: Text('Cancel'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
                                 },
                                 icon: Icon(Icons.add),
                                 label: Text('Add'),
