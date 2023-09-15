@@ -1,6 +1,7 @@
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:artisan/services/client_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,19 @@ class ClientPage extends StatefulWidget {
 }
 
 class _ClientPageState extends State<ClientPage> {
+  bool isWeb(BuildContext context) {
+    if (kIsWeb) {
+      // Check screen size
+      if (MediaQuery.of(context).size.width < 960) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
   List<Client> clients = [];
   var money = '';
   // Sample list of salon services
@@ -45,12 +59,21 @@ class _ClientPageState extends State<ClientPage> {
     }
   }
 
+  DateTime now = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Client Page'),
+        title: Text(
+          'Client Page',
+          style: TextStyle(
+            fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 20,
+          ),
+        ),
       ),
       body: StreamBuilder(
           stream: FirebaseFirestore.instance.collection('Clients').snapshots(),
@@ -95,9 +118,16 @@ class _ClientPageState extends State<ClientPage> {
 
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
+    DateTime dateTime = DateTime(now.year, now.month, now.day);
     Map<String, dynamic> visits = client['visits'];
-
+    Future<DateTime?> pickDate() => showDatePicker(
+        context: context,
+        initialDate: dateTime,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100));
 // Variables to store the extracted data
     List<String> visitDates = [];
     List<Map<String, dynamic>> visitDataList = [];
@@ -130,19 +160,42 @@ class _ClientPageState extends State<ClientPage> {
       amounts.add(amount);
       servicesList.add(services);
     }
-    print(amounts);
-    print(servicesList);
     String latestSpentAmount = amounts.last;
     List<String> latestServicesAvailed = servicesList.last;
     return ListTile(
-      title: Text(name),
+      title: Text(
+        name,
+        style: TextStyle(
+          fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+        ),
+      ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Phone Number: $phoneNumber'),
-          Text('Last Visit Date: $latestDate'),
-          Text('Services: ${latestServicesAvailed.join(", ")}'),
-          Text('Amount Last Spent: $latestSpentAmount'),
+          Text(
+            'Phone Number: $phoneNumber',
+            style: TextStyle(
+              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+            ),
+          ),
+          Text(
+            'Last Visit Date: $latestDate',
+            style: TextStyle(
+              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+            ),
+          ),
+          Text(
+            'Services: ${latestServicesAvailed.join(", ")}',
+            style: TextStyle(
+              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+            ),
+          ),
+          Text(
+            'Amount Last Spent: $latestSpentAmount',
+            style: TextStyle(
+              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+            ),
+          ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -154,7 +207,13 @@ class _ClientPageState extends State<ClientPage> {
                     _showClientHistoryDialog(name, visitDates, servicesList,
                         amounts); // Show client history dialog
                   },
-                  child: Text('Client History'),
+                  child: Text(
+                    'Client History',
+                    style: TextStyle(
+                      fontSize:
+                          _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+                    ),
+                  ),
                 ),
               ),
               ElevatedButton(
@@ -169,7 +228,13 @@ class _ClientPageState extends State<ClientPage> {
                   }
                   _showAddClientDialog();
                 },
-                child: Text('Update'),
+                child: Text(
+                  'Update',
+                  style: TextStyle(
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+                  ),
+                ),
               ),
             ],
           ),
@@ -179,13 +244,61 @@ class _ClientPageState extends State<ClientPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.access_alarm_outlined,
               color: Colors.deepPurple,
             ),
             onPressed: () {
-              // Add your reminder functionality here
-              // This can open a dialog or navigate to a reminder setup page, for example.
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: Text(
+                          'Pick Date & Time',
+                          style: TextStyle(
+                            fontSize: _ClientPageState().isWeb(context)
+                                ? w / 80
+                                : w / 30,
+                          ),
+                        ),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(
+                                10.0), // Adjust the radius as needed
+                          ),
+                        ),
+                        content: SizedBox(
+                          width: w * 0.4,
+                          height: h * 0.4,
+                          child: Column(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final date = await pickDate();
+                                  if (date == null) return;
+                                  setState(
+                                    () => dateTime = date,
+                                  );
+                                },
+                                child: Text(
+                                  '${dateTime.day}/${dateTime.month}/${dateTime.year}',
+                                  style: TextStyle(
+                                    fontSize: _ClientPageState().isWeb(context)
+                                        ? w / 60
+                                        : w / 30,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
             },
           ),
         ],
@@ -203,14 +316,25 @@ class _ClientPageState extends State<ClientPage> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Client History'),
+              Text(
+                'Client History',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                ),
+              ),
               ElevatedButton(
                 onPressed: () {
                   // Show the statistics popup
                   _showStatisticsDialog(
                       name, visitDates, amounts, servicesList);
                 },
-                child: Text('Statistics'),
+                child: Text(
+                  'Statistics',
+                  style: TextStyle(
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
+                ),
               ),
             ],
           ),
@@ -230,7 +354,12 @@ class _ClientPageState extends State<ClientPage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Close'),
+              child: Text(
+                'Close',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                ),
+              ),
             ),
           ],
         );
@@ -240,6 +369,8 @@ class _ClientPageState extends State<ClientPage> {
 
   void _showStatisticsDialog(String name, List<String> visitDates,
       List<String> pastAmounts, List<List<String>> servicesList) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     List<dynamic> _generateLineChartData(List<dynamic> pastAmounts) {
       final List<dynamic> data = [];
       for (int i = 0; i < pastAmounts.length; i++) {
@@ -254,13 +385,28 @@ class _ClientPageState extends State<ClientPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Statistics'),
+          title: Text(
+            'Statistics',
+            style: TextStyle(
+              fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+            ),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Client Name: $name'),
-              Text('Total Visits: ${visitDates.length}'),
+              Text(
+                'Client Name: $name',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                ),
+              ),
+              Text(
+                'Total Visits: ${visitDates.length}',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                ),
+              ),
               SizedBox(
                 height: 200,
                 width: 300,
@@ -279,11 +425,24 @@ class _ClientPageState extends State<ClientPage> {
                 height: 200,
                 width: 300,
                 child: SfCartesianChart(
-                  title: ChartTitle(text: 'Client Spending Over Time'),
+                  title: ChartTitle(
+                    text: 'Client Spending Over Time',
+                    textStyle: TextStyle(
+                      fontSize:
+                          _ClientPageState().isWeb(context) ? w / 100 : w / 30,
+                    ),
+                  ),
                   borderColor: Colors.deepPurple,
                   primaryXAxis: CategoryAxis(),
                   primaryYAxis: NumericAxis(
-                    title: AxisTitle(text: 'Amount Spent'),
+                    title: AxisTitle(
+                      text: 'Amount Spent',
+                      textStyle: TextStyle(
+                        fontSize: _ClientPageState().isWeb(context)
+                            ? w / 100
+                            : w / 30,
+                      ),
+                    ),
                   ),
                   series: <ChartSeries>[
                     LineSeries<dynamic, String>(
@@ -301,7 +460,12 @@ class _ClientPageState extends State<ClientPage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Close'),
+              child: Text(
+                'Close',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                ),
+              ),
             ),
           ],
         );
@@ -324,6 +488,8 @@ class _ClientPageState extends State<ClientPage> {
 
   List<PieChartSectionData> _generatePieChartSections(
       List<List<String>> pastServices) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     // Calculate data for PieChart sections based on most frequently taken services
     // You can customize this as per your statistics logic
 
@@ -373,6 +539,8 @@ class _ClientPageState extends State<ClientPage> {
 
   Widget _buildVisitCard(
       String visitDate, List<String> pastServices, String pastAmounts) {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     return Card(
       margin: EdgeInsets.all(8),
       child: Padding(
@@ -380,9 +548,24 @@ class _ClientPageState extends State<ClientPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Visit Date: $visitDate'),
-            Text('Past Services: ${pastServices.join(", ")}'),
-            Text('Amount Spent: $pastAmounts'),
+            Text(
+              'Visit Date: $visitDate',
+              style: TextStyle(
+                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+              ),
+            ),
+            Text(
+              'Past Services: ${pastServices.join(", ")}',
+              style: TextStyle(
+                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+              ),
+            ),
+            Text(
+              'Amount Spent: $pastAmounts',
+              style: TextStyle(
+                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+              ),
+            ),
           ],
         ),
       ),
@@ -412,86 +595,126 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   Future<void> _showAddClientDialog() async {
+    double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.height;
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateInsideDialog) {
-            money = calculateTotalSpend(serviceCheckboxes.keys
-                    .where((key) => serviceCheckboxes[key]!)
-                    .toList())
-                .toStringAsFixed(2);
-            return AlertDialog(
-              title: Text(editingIndex == -1 ? 'Add Client' : 'Edit Client'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
+        return SingleChildScrollView(
+          child: StatefulBuilder(
+            builder: (context, setStateInsideDialog) {
+              money = calculateTotalSpend(serviceCheckboxes.keys
+                      .where((key) => serviceCheckboxes[key]!)
+                      .toList())
+                  .toStringAsFixed(2);
+              return AlertDialog(
+                title: Text(
+                  editingIndex == -1 ? 'Add Client' : 'Edit Client',
+                  style: TextStyle(
+                    fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                   ),
-                  TextField(
-                    controller: phoneNumberController,
-                    decoration: InputDecoration(labelText: 'Phone Number'),
-                  ),
-                  // Add checkboxes for services
-                  for (String service in salonServices)
-                    CheckboxListTile(
-                      title: Text(service),
-                      value: serviceCheckboxes[service] ?? false,
-                      onChanged: (bool? value) {
-                        setStateInsideDialog(() {
-                          serviceCheckboxes[service] = value ?? false;
-                        });
-                      },
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        labelStyle: TextStyle(
+                          fontSize:
+                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                        ),
+                      ),
                     ),
-                  Text(
-                    'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.bold,
+                    TextField(
+                      controller: phoneNumberController,
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        labelStyle: TextStyle(
+                          fontSize:
+                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                        ),
+                      ),
+                    ),
+                    // Add checkboxes for services
+                    for (String service in salonServices)
+                      CheckboxListTile(
+                        title: Text(
+                          service,
+                          style: TextStyle(
+                            fontSize: _ClientPageState().isWeb(context)
+                                ? w / 60
+                                : w / 30,
+                          ),
+                        ),
+                        value: serviceCheckboxes[service] ?? false,
+                        onChanged: (bool? value) {
+                          setStateInsideDialog(() {
+                            serviceCheckboxes[service] = value ?? false;
+                          });
+                        },
+                      ),
+                    Text(
+                      'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize:
+                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize:
+                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Create a new client or update the existing one
+                      final name = nameController.text;
+                      final phoneNumber = phoneNumberController.text;
+                      final selectedServiceList = <String>[];
+                      // Collect the selected services
+                      for (String service in salonServices) {
+                        if (serviceCheckboxes[service] ?? false) {
+                          selectedServiceList.add(service);
+                        }
+                      }
+        
+                      if (editingIndex == -1) {
+                        // Add a new client
+                        final visitDate = DateTime.now().toString();
+                        ClientService().clientEngagement(phoneNumber, name,
+                            visitDate, selectedServiceList, money);
+                      } else {
+                        // Edit an existing client
+                        final visitDate = DateTime.now().toString();
+                        ClientService().clientEngagement(phoneNumber, name,
+                            visitDate, selectedServiceList, money);
+                      }
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: Text(
+                      editingIndex == -1 ? 'Add' : 'Save',
+                      style: TextStyle(
+                        fontSize:
+                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                      ),
                     ),
                   ),
                 ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // Create a new client or update the existing one
-                    final name = nameController.text;
-                    final phoneNumber = phoneNumberController.text;
-                    final selectedServiceList = <String>[];
-                    // Collect the selected services
-                    for (String service in salonServices) {
-                      if (serviceCheckboxes[service] ?? false) {
-                        selectedServiceList.add(service);
-                      }
-                    }
-
-                    if (editingIndex == -1) {
-                      // Add a new client
-                      final visitDate = DateTime.now().toString();
-                      ClientService().clientEngagement(phoneNumber, name,
-                          visitDate, selectedServiceList, money);
-                    } else {
-                      // Edit an existing client
-                      final visitDate = DateTime.now().toString();
-                      ClientService().clientEngagement(phoneNumber, name,
-                          visitDate, selectedServiceList, money);
-                    }
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text(editingIndex == -1 ? 'Add' : 'Save'),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
