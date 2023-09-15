@@ -1,4 +1,4 @@
-import 'package:artisan/client.dart';
+import 'package:artisan/pages/client.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

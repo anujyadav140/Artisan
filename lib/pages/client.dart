@@ -486,8 +486,8 @@ class _ClientPageState extends State<ClientPage> {
 class Client {
   final String name;
   final String phoneNumber;
-  List<dynamic> visitDates; // Updated to store all visit dates
-  List<List<String>> pastServices; // Updated to store past services
+  List<dynamic> visitDates;
+  List<List<String>> pastServices;
   List<dynamic> pastAmounts;
   Client(this.name, this.phoneNumber, this.visitDates, this.pastServices,
       this.pastAmounts);
