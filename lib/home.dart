@@ -1,5 +1,7 @@
 import 'package:artisan/client.dart';
+import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,12 +22,26 @@ launchWhatsAppUri() async {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  //logout user
+  void logout() {
+    //get auth service
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.logout();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+              onPressed: () {
+                logout();
+              },
+              icon: const Icon(Icons.logout))
+        ],
       ),
       body: Column(
         children: [

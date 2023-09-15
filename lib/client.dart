@@ -1,5 +1,7 @@
+import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ClientPage extends StatefulWidget {
@@ -121,7 +123,10 @@ class _ClientPageState extends State<ClientPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(
+              Icons.access_alarm_outlined,
+              color: Colors.deepPurple,
+            ),
             onPressed: () {
               // Add your reminder functionality here
               // This can open a dialog or navigate to a reminder setup page, for example.
@@ -183,7 +188,7 @@ class _ClientPageState extends State<ClientPage> {
       final List<dynamic> data = [];
       for (int i = 0; i < pastAmounts.length; i++) {
         final double y = double.parse(pastAmounts[i].toString());
-        final String x = client.visitDates[i];
+        final dynamic x = (i + 1).toString();
         data.add({'date': x, 'amount': y});
       }
       return data;
@@ -219,6 +224,7 @@ class _ClientPageState extends State<ClientPage> {
                 width: 300,
                 child: SfCartesianChart(
                   title: ChartTitle(text: 'Client Spending Over Time'),
+                  borderColor: Colors.deepPurple,
                   primaryXAxis: CategoryAxis(),
                   primaryYAxis: NumericAxis(
                     title: AxisTitle(text: 'Amount Spent'),
@@ -281,11 +287,11 @@ class _ClientPageState extends State<ClientPage> {
     // Create PieChart sections based on the most frequently taken services
     final List<PieChartSectionData> sections = [];
     final List<Color> sectionColors = [
-      Colors.blue,
-      Colors.green,
-      Colors.red,
-      Colors.orange,
-      Colors.purple,
+      const Color.fromRGBO(179, 157, 219, 1),
+      const Color.fromRGBO(126, 87, 194, 1),
+      const Color.fromRGBO(94, 53, 177, 1),
+      const Color.fromRGBO(69, 39, 160, 1),
+      const Color.fromRGBO(49, 27, 146, 1),
       // Add more colors as needed
     ];
 
