@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:whatsapp_unilink/whatsapp_unilink.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ClientPage extends StatefulWidget {
   const ClientPage({Key? key}) : super(key: key);
@@ -28,7 +31,6 @@ class _ClientPageState extends State<ClientPage> {
     }
   }
 
-  List<Client> clients = [];
   var money = '';
   // Sample list of salon services
   static List<String> salonServices = [
@@ -554,16 +556,16 @@ class _ClientPageState extends State<ClientPage> {
                                         return Card(
                                           child: ListTile(
                                             title: Text(
-                                              'Reminder set on $date at $time for ${services.join(", ")}',
+                                              'Reminder set for $date at $time for ${services.join(", ")}',
                                               style: TextStyle(
                                                 fontSize: _ClientPageState()
                                                         .isWeb(context)
                                                     ? w / 60
-                                                    : w / 30,
+                                                    : w / 35,
                                               ),
                                             ),
                                             trailing: IconButton(
-                                              icon: Icon(Icons.delete),
+                                              icon: const Icon(Icons.delete),
                                               onPressed: () {
                                                 // Delete the card from Firestore
                                                 ClientService().deleteReminder(
@@ -589,9 +591,157 @@ class _ClientPageState extends State<ClientPage> {
               );
             },
           ),
+          SizedBox(
+            width: 36,
+            height: 36,
+            child: IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(
+                        'Send Reminders',
+                        style: TextStyle(
+                          fontSize: _ClientPageState().isWeb(context)
+                              ? w / 60
+                              : w / 30,
+                        ),
+                      ),
+                      content: SizedBox(
+                        width: w * 0.4,
+                        height: h * 0.6,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: StreamBuilder(
+                                stream: FirebaseFirestore.instance
+                                    .collection('Clients')
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (!snapshot.hasData ||
+                                      snapshot.data!.docs.isEmpty) {
+                                    return Text(
+                                      'No data available',
+                                      style: TextStyle(
+                                        fontSize:
+                                            _ClientPageState().isWeb(context)
+                                                ? w / 60
+                                                : w / 30,
+                                      ),
+                                    );
+                                  }
+                                  var clientData = snapshot.data!.docs;
+                                  var reminder = clientData[index].data();
+
+                                  if (reminder['reminders'] == null ||
+                                      reminder['reminders'].isEmpty) {
+                                    return const Text('NO DATA FOUND');
+                                  }
+
+                                  List<List<String>> serviceLists = [];
+                                  List<String> dateList = [];
+                                  List<String> timeList = [];
+                                  Map<String, dynamic> reminders =
+                                      reminder['reminders'];
+
+                                  return ListView.builder(
+                                    itemCount: reminders.length,
+                                    itemBuilder: (context, index) {
+                                      List<String> reminderKeys =
+                                          reminders.keys.toList();
+                                      Map<String, dynamic> reminderData =
+                                          reminders[reminderKeys[index]];
+                                      String date = reminderData['date'];
+                                      String time = reminderData['time'];
+                                      String reminderKey = '$date $time';
+                                      List<String> services = List<String>.from(
+                                          reminderData['services']);
+
+                                      return Card(
+                                        child: Column(
+                                          children: [
+                                            ListTile(
+                                              title: Text(
+                                                'Reminder set for $date at $time for ${services.join(", ")}',
+                                                style: TextStyle(
+                                                  fontSize: _ClientPageState()
+                                                          .isWeb(context)
+                                                      ? w / 80
+                                                      : w / 35,
+                                                ),
+                                              ),
+                                              trailing: IconButton(
+                                                onPressed: () async {
+                                                  launchWhatsAppUri(
+                                                    phoneNumber,
+                                                    visitDates.last,
+                                                    date,
+                                                    time,
+                                                    services,
+                                                  );
+                                                },
+                                                icon: const Icon(Icons.send),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            'Close',
+                            style: TextStyle(
+                              fontSize: _ClientPageState().isWeb(context)
+                                  ? w / 80
+                                  : w / 45,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: SvgPicture.asset(
+                'assets/images/whatsapp.svg',
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
         ],
       ),
     );
+  }
+
+  void launchWhatsAppUri(String number, String lastVisitDate, String date,
+      String time, List<String> services) async {
+    final phoneNumber = "+91-$number";
+    final message = "Hey, Your last visit date was on: $lastVisitDate\n"
+        "You have an appointment on $date at $time for the following services: ${services.join(', ')}\n"
+        "Best regards,\nArtisan";
+
+    final link = WhatsAppUnilink(
+      phoneNumber: phoneNumber,
+      text: message,
+    );
+
+    await launchUrl(link.asUri());
   }
 
   void _showClientHistoryDialog(String name, List<String> visitDates,
@@ -626,7 +776,7 @@ class _ClientPageState extends State<ClientPage> {
               ),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             width: w * 0.4,
             child: SingleChildScrollView(
               child: Column(
@@ -1015,14 +1165,4 @@ class _ClientPageState extends State<ClientPage> {
       },
     );
   }
-}
-
-class Client {
-  final String name;
-  final String phoneNumber;
-  List<dynamic> visitDates;
-  List<List<String>> pastServices;
-  List<dynamic> pastAmounts;
-  Client(this.name, this.phoneNumber, this.visitDates, this.pastServices,
-      this.pastAmounts);
 }
