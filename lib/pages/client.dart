@@ -38,13 +38,6 @@ class _ClientPageState extends State<ClientPage> {
     'Pedicure',
     'Facial',
     'Massage',
-    'Fashion',
-    'Rhyme',
-    'Longer',
-    'Monger',
-    'nigger',
-    'Jerkins',
-    "Nerkins",
   ];
 
   // Map to store the checked state of each service
@@ -141,7 +134,7 @@ class _ClientPageState extends State<ClientPage> {
         context: context,
         initialTime: TimeOfDay(
             hour: DateTime.now().hour, minute: DateTime.now().minute));
-// Variables to store the extracted data
+    // Variables to store the extracted data
     List<String> visitDates = [];
     List<Map<String, dynamic>> visitDataList = [];
 
@@ -149,11 +142,11 @@ class _ClientPageState extends State<ClientPage> {
     List<MapEntry<String, dynamic>> sortedVisits = visits.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
-// Clear existing data in visitDates and visitDataList
+    // Clear existing data in visitDates and visitDataList
     visitDates.clear();
     visitDataList.clear();
 
-// Populate visitDates and visitDataList with sorted data
+    // Populate visitDates and visitDataList with sorted data
     for (var entry in sortedVisits) {
       visitDates.add(entry.key);
       visitDataList.add(Map<String, dynamic>.from(entry.value));
@@ -176,6 +169,7 @@ class _ClientPageState extends State<ClientPage> {
     String latestSpentAmount = amounts.last;
     List<String> latestServicesAvailed = servicesList.last;
     List<DateTime> dateTimes = [];
+
     return ListTile(
       title: Text(
         name,
@@ -272,7 +266,9 @@ class _ClientPageState extends State<ClientPage> {
                         title: Text(
                           'Reminder',
                           style: TextStyle(
-                            fontSize: isWeb(context) ? w / 80 : w / 30,
+                            fontSize: _ClientPageState().isWeb(context)
+                                ? w / 60
+                                : w / 30,
                           ),
                         ),
                         shape: const RoundedRectangleBorder(
@@ -282,7 +278,7 @@ class _ClientPageState extends State<ClientPage> {
                         ),
                         content: SizedBox(
                           width: w * 0.4,
-                          height: h * 0.4,
+                          height: h * 0.6,
                           child: Column(
                             children: [
                               ElevatedButton.icon(
@@ -301,7 +297,7 @@ class _ClientPageState extends State<ClientPage> {
                                             StateSetter setState) {
                                           return AlertDialog(
                                             title: Text(
-                                              'Add Appointment',
+                                              'Add Reminders',
                                               style: TextStyle(
                                                 fontSize: isWeb(context)
                                                     ? w / 80
@@ -340,7 +336,7 @@ class _ClientPageState extends State<ClientPage> {
                                                         });
                                                       }
                                                     },
-                                                    icon: Icon(
+                                                    icon: const Icon(
                                                         Icons.calendar_today),
                                                     label: Text(
                                                       '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
@@ -375,8 +371,8 @@ class _ClientPageState extends State<ClientPage> {
                                                         });
                                                       }
                                                     },
-                                                    icon:
-                                                        Icon(Icons.access_time),
+                                                    icon: const Icon(
+                                                        Icons.access_time),
                                                     label: Text(
                                                       selectedTime
                                                           .format(context),
@@ -443,16 +439,36 @@ class _ClientPageState extends State<ClientPage> {
                                                           Navigator.of(context)
                                                               .pop(); // Close this dialog
                                                         },
-                                                        child: Text('OK'),
+                                                        child: Text(
+                                                          'OK',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                _ClientPageState()
+                                                                        .isWeb(
+                                                                            context)
+                                                                    ? w / 60
+                                                                    : w / 30,
+                                                          ),
+                                                        ),
                                                       ),
-                                                      SizedBox(width: 10),
+                                                      const SizedBox(width: 10),
                                                       ElevatedButton(
                                                         onPressed: () {
                                                           // Handle Cancel button action, e.g., cancel appointment
                                                           Navigator.of(context)
                                                               .pop(); // Close this dialog
                                                         },
-                                                        child: Text('Cancel'),
+                                                        child: Text(
+                                                          'Cancel',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                _ClientPageState()
+                                                                        .isWeb(
+                                                                            context)
+                                                                    ? w / 60
+                                                                    : w / 30,
+                                                          ),
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -465,34 +481,100 @@ class _ClientPageState extends State<ClientPage> {
                                     },
                                   );
                                 },
-                                icon: Icon(Icons.add),
-                                label: Text('Add'),
+                                icon: const Icon(Icons.add),
+                                label: Text(
+                                  'Add',
+                                  style: TextStyle(
+                                    fontSize: _ClientPageState().isWeb(context)
+                                        ? w / 60
+                                        : w / 30,
+                                  ),
+                                ),
                               ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               Expanded(
-                                child: ListView.builder(
-                                  itemCount: dateTimes.length,
-                                  itemBuilder: (context, index) {
-                                    final dateTime = dateTimes[index];
-                                    return Card(
-                                      child: ListTile(
-                                        title: Text(
-                                          '${dateTime.day}/${dateTime.month}/${dateTime.year}',
-                                          style: TextStyle(
-                                            fontSize: isWeb(context)
-                                                ? w / 60
-                                                : w / 30,
+                                child: StreamBuilder(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('Clients')
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const CircularProgressIndicator();
+                                    }
+                                    if (!snapshot.hasData ||
+                                        snapshot.data!.docs.isEmpty) {
+                                      return Text(
+                                        'No data available',
+                                        style: TextStyle(
+                                          fontSize:
+                                              _ClientPageState().isWeb(context)
+                                                  ? w / 60
+                                                  : w / 30,
+                                        ),
+                                      );
+                                    }
+                                    var clientData = snapshot.data!.docs;
+                                    var reminder = clientData[index].data();
+
+                                    if (reminder['reminders'] == null ||
+                                        reminder['reminders'].isEmpty) {
+                                      return const Text('NO DATA FOUND');
+                                    }
+
+                                    List<List<String>> serviceLists = [];
+                                    List<String> dateList = [];
+                                    List<String> timeList = [];
+                                    Map<String, dynamic> reminders =
+                                        reminder['reminders'];
+
+                                    return ListView.builder(
+                                      itemCount: reminders.length,
+                                      itemBuilder: (context, index) {
+                                        // Get the reminder keys (date and time) as a List
+                                        List<String> reminderKeys =
+                                            reminders.keys.toList();
+
+                                        // Extract the reminder data for the current index
+                                        Map<String, dynamic> reminderData =
+                                            reminders[reminderKeys[index]];
+
+                                        // Get the date and time from the reminder data
+                                        String date = reminderData['date'];
+                                        String time = reminderData['time'];
+
+                                        // Construct the reminder key
+                                        String reminderKey = '$date $time';
+
+                                        // Extract service list
+                                        List<String> services =
+                                            List<String>.from(
+                                                reminderData['services']);
+
+                                        return Card(
+                                          child: ListTile(
+                                            title: Text(
+                                              'Reminder set on $date at $time for ${services.join(", ")}',
+                                              style: TextStyle(
+                                                fontSize: _ClientPageState()
+                                                        .isWeb(context)
+                                                    ? w / 60
+                                                    : w / 30,
+                                              ),
+                                            ),
+                                            trailing: IconButton(
+                                              icon: Icon(Icons.delete),
+                                              onPressed: () {
+                                                // Delete the card from Firestore
+                                                ClientService().deleteReminder(
+                                                  phoneNumber,
+                                                  reminderKey,
+                                                );
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                        trailing: IconButton(
-                                          icon: Icon(Icons.delete),
-                                          onPressed: () {
-                                            setState(() {
-                                              dateTimes.removeAt(index);
-                                            });
-                                          },
-                                        ),
-                                      ),
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -787,13 +869,6 @@ class _ClientPageState extends State<ClientPage> {
       'Pedicure': 20.0,
       'Facial': 30.0,
       'Massage': 40.0,
-      'Fashion': 1000.0,
-      'Rhyme': 200.0,
-      'Longer': 100.0,
-      'Monger': 200.0,
-      'nigger': 100.0,
-      'Jerkins': 100.0,
-      "Nerkins": 200.0,
     };
 
     double totalSpend = 0.0;
@@ -837,8 +912,9 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Name',
                         labelStyle: TextStyle(
-                          fontSize:
-                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          fontSize: _ClientPageState().isWeb(context)
+                              ? w / 60
+                              : w / 30,
                         ),
                       ),
                     ),
@@ -847,8 +923,9 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: TextStyle(
-                          fontSize:
-                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          fontSize: _ClientPageState().isWeb(context)
+                              ? w / 60
+                              : w / 30,
                         ),
                       ),
                     ),

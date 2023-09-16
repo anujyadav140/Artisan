@@ -110,4 +110,53 @@ class ClientService extends ChangeNotifier {
       throw error;
     }
   }
+
+  Future<void> deleteReminder(
+    String phoneNumber,
+    String reminderKey,
+  ) async {
+    try {
+      // Reference to the Firestore collection "Clients"
+      final CollectionReference clientsCollection =
+          _firestore.collection('Clients');
+
+      // Create a document reference for the specific client
+      final DocumentReference clientDocumentRef =
+          clientsCollection.doc(phoneNumber);
+
+      // Get the existing client data
+      final DocumentSnapshot clientSnapshot = await clientDocumentRef.get();
+      if (!clientSnapshot.exists) {
+        throw Exception("Client not found.");
+      }
+
+      // Extract the current client data
+      final Map<String, dynamic> clientData =
+          clientSnapshot.data() as Map<String, dynamic>;
+
+      // Check if the reminders field exists
+      if (clientData.containsKey('reminders')) {
+        // Get the reminders map
+        final Map<String, dynamic> reminders =
+            Map<String, dynamic>.from(clientData['reminders']);
+
+        // Check if the reminder key exists in the reminders map
+        if (reminders.containsKey(reminderKey)) {
+          // Delete the specific reminder
+          reminders.remove(reminderKey);
+
+          // Update the client data with the modified reminders map
+          clientData['reminders'] = reminders;
+
+          // Update the client document with the new data
+          await clientDocumentRef.update(clientData);
+
+          notifyListeners();
+        }
+      }
+    } catch (error) {
+      print("Error: $error");
+      throw error;
+    }
+  }
 }
