@@ -38,6 +38,13 @@ class _ClientPageState extends State<ClientPage> {
     'Pedicure',
     'Facial',
     'Massage',
+    'Fashion',
+    'Rhyme',
+    'Longer',
+    'Monger',
+    'nigger',
+    'Jerkins',
+    "Nerkins",
   ];
 
   // Map to store the checked state of each service
@@ -122,12 +129,18 @@ class _ClientPageState extends State<ClientPage> {
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
     DateTime dateTime = DateTime(now.year, now.month, now.day);
+
     Map<String, dynamic> visits = client['visits'];
     Future<DateTime?> pickDate() => showDatePicker(
         context: context,
         initialDate: dateTime,
         firstDate: DateTime(1900),
         lastDate: DateTime(2100));
+
+    Future<TimeOfDay?> pickTime() => showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(
+            hour: DateTime.now().hour, minute: DateTime.now().minute));
 // Variables to store the extracted data
     List<String> visitDates = [];
     List<Map<String, dynamic>> visitDataList = [];
@@ -280,141 +293,174 @@ class _ClientPageState extends State<ClientPage> {
                                       DateTime selectedDate = DateTime
                                           .now(); // Initialize with the current date and time
                                       TimeOfDay selectedTime = TimeOfDay.now();
-                                      String selectedService = 'Haircut';
+                                      List<String> selectedServices =
+                                          []; // Initialize an empty list for selected services
 
-                                      return AlertDialog(
-                                        title: Text(
-                                          'Add Appointment',
-                                          style: TextStyle(
-                                            fontSize: isWeb(context)
-                                                ? w / 80
-                                                : w / 30,
-                                          ),
-                                        ),
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(10.0),
-                                          ),
-                                        ),
-                                        content: SizedBox(
-                                          width: w * 0.4,
-                                          height: h * 0.6,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Date:',
-                                                style: TextStyle(
-                                                  fontSize: isWeb(context)
-                                                      ? w / 80
-                                                      : w / 30,
-                                                ),
+                                      return StatefulBuilder(
+                                        builder: (BuildContext context,
+                                            StateSetter setState) {
+                                          return AlertDialog(
+                                            title: Text(
+                                              'Add Appointment',
+                                              style: TextStyle(
+                                                fontSize: isWeb(context)
+                                                    ? w / 80
+                                                    : w / 30,
                                               ),
-                                              ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  final date = await pickDate();
-                                                  if (date != null) {
-                                                    setState(() {
-                                                      selectedDate = date;
-                                                    });
-                                                  }
-                                                },
-                                                icon:
-                                                    Icon(Icons.calendar_today),
-                                                label: Text(
-                                                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                                                  style: TextStyle(
-                                                    fontSize: isWeb(context)
-                                                        ? w / 60
-                                                        : w / 30,
-                                                  ),
-                                                ),
+                                            ),
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(10.0),
                                               ),
-                                              Text(
-                                                'Time:',
-                                                style: TextStyle(
-                                                  fontSize: isWeb(context)
-                                                      ? w / 80
-                                                      : w / 30,
-                                                ),
-                                              ),
-                                              ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  // final time = await pickTime();
-                                                  // if (time != null) {
-                                                  //   setState(() {
-                                                  //     selectedTime = time;
-                                                  //   });
-                                                  // }
-                                                },
-                                                icon: Icon(Icons.access_time),
-                                                label: Text(
-                                                  '${selectedTime.format(context)}',
-                                                  style: TextStyle(
-                                                    fontSize: isWeb(context)
-                                                        ? w / 60
-                                                        : w / 30,
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                'Select Service:',
-                                                style: TextStyle(
-                                                  fontSize: isWeb(context)
-                                                      ? w / 80
-                                                      : w / 30,
-                                                ),
-                                              ),
-                                              DropdownButton<String>(
-                                                value: selectedService,
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    selectedService = newValue!;
-                                                  });
-                                                },
-                                                items: <String>[
-                                                  'Haircut',
-                                                  'Coloring',
-                                                  'Styling',
-                                                  'Others'
-                                                ].map<DropdownMenuItem<String>>(
-                                                    (String value) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: value,
-                                                    child: Text(value),
-                                                  );
-                                                }).toList(),
-                                              ),
-                                              Row(
+                                            ),
+                                            content: SizedBox(
+                                              width: w * 0.4,
+                                              child: Column(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.end,
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  ElevatedButton(
-                                                    onPressed: () {
-                                                      // Handle OK button action, e.g., save appointment
-                                                      Navigator.of(context)
-                                                          .pop(); // Close this dialog
-                                                    },
-                                                    child: Text('OK'),
+                                                  Text(
+                                                    'Date:',
+                                                    style: TextStyle(
+                                                      fontSize: isWeb(context)
+                                                          ? w / 80
+                                                          : w / 30,
+                                                    ),
                                                   ),
-                                                  SizedBox(width: 10),
-                                                  ElevatedButton(
-                                                    onPressed: () {
-                                                      // Handle Cancel button action, e.g., cancel appointment
-                                                      Navigator.of(context)
-                                                          .pop(); // Close this dialog
+                                                  ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final date =
+                                                          await pickDate();
+                                                      if (date != null) {
+                                                        setState(() {
+                                                          selectedDate = date;
+                                                        });
+                                                      }
                                                     },
-                                                    child: Text('Cancel'),
+                                                    icon: Icon(
+                                                        Icons.calendar_today),
+                                                    label: Text(
+                                                      '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                                      style: TextStyle(
+                                                        fontSize: isWeb(context)
+                                                            ? w / 60
+                                                            : w / 30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Time:',
+                                                    style: TextStyle(
+                                                      fontSize: isWeb(context)
+                                                          ? w / 80
+                                                          : w / 30,
+                                                    ),
+                                                  ),
+                                                  ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      // Inside your onPressed method
+                                                      final time =
+                                                          await pickTime();
+                                                      if (time != null) {
+                                                        setState(() {
+                                                          selectedTime =
+                                                              TimeOfDay(
+                                                                  hour:
+                                                                      time.hour,
+                                                                  minute: time
+                                                                      .minute);
+                                                        });
+                                                      }
+                                                    },
+                                                    icon:
+                                                        Icon(Icons.access_time),
+                                                    label: Text(
+                                                      selectedTime
+                                                          .format(context),
+                                                      style: TextStyle(
+                                                        fontSize: isWeb(context)
+                                                            ? w / 60
+                                                            : w / 30,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Select Services:',
+                                                    style: TextStyle(
+                                                      fontSize: isWeb(context)
+                                                          ? w / 80
+                                                          : w / 30,
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: ListView(
+                                                      children: _ClientPageState
+                                                          .salonServices
+                                                          .map((service) {
+                                                        return CheckboxListTile(
+                                                          title: Text(service),
+                                                          value:
+                                                              selectedServices
+                                                                  .contains(
+                                                                      service),
+                                                          onChanged:
+                                                              (bool? value) {
+                                                            setState(() {
+                                                              if (value !=
+                                                                  null) {
+                                                                if (value) {
+                                                                  selectedServices
+                                                                      .add(
+                                                                          service); // Check the checkbox
+                                                                } else {
+                                                                  selectedServices
+                                                                      .remove(
+                                                                          service); // Uncheck the checkbox
+                                                                }
+                                                              }
+                                                            });
+                                                          },
+                                                        );
+                                                      }).toList(),
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          // save appointment
+                                                          ClientService()
+                                                              .addReminderToClient(
+                                                                  phoneNumber,
+                                                                  selectedDate,
+                                                                  selectedTime,
+                                                                  selectedServices);
+                                                          Navigator.of(context)
+                                                              .pop(); // Close this dialog
+                                                        },
+                                                        child: Text('OK'),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          // Handle Cancel button action, e.g., cancel appointment
+                                                          Navigator.of(context)
+                                                              .pop(); // Close this dialog
+                                                        },
+                                                        child: Text('Cancel'),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
+                                            ),
+                                          );
+                                        },
                                       );
                                     },
                                   );
@@ -741,6 +787,13 @@ class _ClientPageState extends State<ClientPage> {
       'Pedicure': 20.0,
       'Facial': 30.0,
       'Massage': 40.0,
+      'Fashion': 1000.0,
+      'Rhyme': 200.0,
+      'Longer': 100.0,
+      'Monger': 200.0,
+      'nigger': 100.0,
+      'Jerkins': 100.0,
+      "Nerkins": 200.0,
     };
 
     double totalSpend = 0.0;
@@ -760,22 +813,23 @@ class _ClientPageState extends State<ClientPage> {
     await showDialog(
       context: context,
       builder: (context) {
-        return SingleChildScrollView(
-          child: StatefulBuilder(
-            builder: (context, setStateInsideDialog) {
-              money = calculateTotalSpend(serviceCheckboxes.keys
-                      .where((key) => serviceCheckboxes[key]!)
-                      .toList())
-                  .toStringAsFixed(2);
-              return AlertDialog(
-                title: Text(
-                  editingIndex == -1 ? 'Add Client' : 'Edit Client',
-                  style: TextStyle(
-                    fontSize:
-                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                  ),
+        return StatefulBuilder(
+          builder: (context, setStateInsideDialog) {
+            money = calculateTotalSpend(serviceCheckboxes.keys
+                    .where((key) => serviceCheckboxes[key]!)
+                    .toList())
+                .toStringAsFixed(2);
+            return AlertDialog(
+              title: Text(
+                editingIndex == -1 ? 'Add Client' : 'Edit Client',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                 ),
-                content: Column(
+              ),
+              content: SizedBox(
+                width: w * 0.3,
+                height: h * 0.6,
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
@@ -783,9 +837,8 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Name',
                         labelStyle: TextStyle(
-                          fontSize: _ClientPageState().isWeb(context)
-                              ? w / 60
-                              : w / 30,
+                          fontSize:
+                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                         ),
                       ),
                     ),
@@ -794,30 +847,33 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: TextStyle(
-                          fontSize: _ClientPageState().isWeb(context)
-                              ? w / 60
-                              : w / 30,
+                          fontSize:
+                              _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                         ),
                       ),
                     ),
-                    // Add checkboxes for services
-                    for (String service in salonServices)
-                      CheckboxListTile(
-                        title: Text(
-                          service,
-                          style: TextStyle(
-                            fontSize: _ClientPageState().isWeb(context)
-                                ? w / 60
-                                : w / 30,
-                          ),
-                        ),
-                        value: serviceCheckboxes[service] ?? false,
-                        onChanged: (bool? value) {
-                          setStateInsideDialog(() {
-                            serviceCheckboxes[service] = value ?? false;
-                          });
-                        },
+                    Expanded(
+                      child: ListView(
+                        children: salonServices.map((service) {
+                          return CheckboxListTile(
+                            title: Text(
+                              service,
+                              style: TextStyle(
+                                fontSize: _ClientPageState().isWeb(context)
+                                    ? w / 60
+                                    : w / 30,
+                              ),
+                            ),
+                            value: serviceCheckboxes[service] ?? false,
+                            onChanged: (bool? value) {
+                              setStateInsideDialog(() {
+                                serviceCheckboxes[service] = value ?? false;
+                              });
+                            },
+                          );
+                        }).toList(),
                       ),
+                    ),
                     Text(
                       'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
                       style: TextStyle(
@@ -827,57 +883,57 @@ class _ClientPageState extends State<ClientPage> {
                     ),
                   ],
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        fontSize:
-                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontSize:
+                          _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Create a new client or update the existing one
-                      final name = nameController.text;
-                      final phoneNumber = phoneNumberController.text;
-                      final selectedServiceList = <String>[];
-                      // Collect the selected services
-                      for (String service in salonServices) {
-                        if (serviceCheckboxes[service] ?? false) {
-                          selectedServiceList.add(service);
-                        }
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Create a new client or update the existing one
+                    final name = nameController.text;
+                    final phoneNumber = phoneNumberController.text;
+                    final selectedServiceList = <String>[];
+                    // Collect the selected services
+                    for (String service in salonServices) {
+                      if (serviceCheckboxes[service] ?? false) {
+                        selectedServiceList.add(service);
                       }
+                    }
 
-                      if (editingIndex == -1) {
-                        // Add a new client
-                        final visitDate = DateTime.now().toString();
-                        ClientService().clientEngagement(phoneNumber, name,
-                            visitDate, selectedServiceList, money);
-                      } else {
-                        // Edit an existing client
-                        final visitDate = DateTime.now().toString();
-                        ClientService().clientEngagement(phoneNumber, name,
-                            visitDate, selectedServiceList, money);
-                      }
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                    child: Text(
-                      editingIndex == -1 ? 'Add' : 'Save',
-                      style: TextStyle(
-                        fontSize:
-                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                      ),
+                    if (editingIndex == -1) {
+                      // Add a new client
+                      final visitDate = DateTime.now().toString();
+                      ClientService().clientEngagement(phoneNumber, name,
+                          visitDate, selectedServiceList, money);
+                    } else {
+                      // Edit an existing client
+                      final visitDate = DateTime.now().toString();
+                      ClientService().clientEngagement(phoneNumber, name,
+                          visitDate, selectedServiceList, money);
+                    }
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    editingIndex == -1 ? 'Add' : 'Save',
+                    style: TextStyle(
+                      fontSize:
+                          _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                     ),
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
