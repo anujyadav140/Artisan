@@ -63,7 +63,10 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   DateTime now = DateTime.now();
-  List<String> filter = [
+  GroupButtonController groupButtonController = GroupButtonController(
+    selectedIndex: 0,
+  );
+  List<String> filterOptions = [
     'Latest visit date to oldest visit',
     'Oldest visit date to latest visit',
     'Within 2 days',
@@ -72,6 +75,7 @@ class _ClientPageState extends State<ClientPage> {
     'No reminder set',
     'All reminders set'
   ];
+  String selectedFilter = 'Latest visit date to oldest visit';
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
@@ -95,10 +99,13 @@ class _ClientPageState extends State<ClientPage> {
               children: [
                 GroupButton(
                   isRadio: true,
+                  controller: groupButtonController,
                   onSelected: (value, index, isSelected) {
-                    // Handle button selection here
+                    setState(() {
+                      selectedFilter = filterOptions[index];
+                    });
                   },
-                  buttons: filter,
+                  buttons: filterOptions,
                 ),
               ],
             ),
@@ -112,14 +119,16 @@ class _ClientPageState extends State<ClientPage> {
                   return const Text('No data available'); // Handle empty data.
                 }
                 var clientData = snapshot.data!.docs;
+                List<QueryDocumentSnapshot<Map<String, dynamic>>> filteredData =
+                    filterClientData(clientData);
 
                 return ListView.builder(
-                  itemCount: clientData.length,
+                  itemCount: filteredData.length,
                   itemBuilder: (context, index) {
                     var clientData = snapshot.data!.docs;
                     return Column(
                       children: [
-                        _buildClientListItem(clientData, index),
+                        _buildClientListItem(filteredData, index),
                         const Divider(),
                       ],
                     );
@@ -147,6 +156,95 @@ class _ClientPageState extends State<ClientPage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  filterClientData(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData) {
+    switch (selectedFilter) {
+      case 'Latest visit date to oldest visit':
+        // Sort the data by visit date in descending order
+        clientData.sort((a, b) {
+          var dateA = a['visits'].keys.last;
+          var dateB = b['visits'].keys.last;
+          return dateB.compareTo(dateA);
+        });
+        break;
+      case 'Oldest visit date to latest visit':
+        // Sort the data by visit date in ascending order
+        clientData.sort((a, b) {
+          var dateA = a['visits'].keys.last;
+          var dateB = b['visits'].keys.last;
+          return dateA.compareTo(dateB);
+        });
+        break;
+      case 'Within 2 days reminder':
+        // Filter the data for clients with reminders within 2 days
+        clientData = clientData.where((client) {
+          if (client['reminders'] != null) {
+            DateTime now = DateTime.now();
+            DateTime twoDaysAhead = now.add(Duration(days: 2));
+            return client['reminders'].keys.any((key) {
+              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
+              return reminderDate.isBefore(twoDaysAhead);
+            });
+          }
+          return false;
+        }).toList();
+        break;
+      case 'Within 7 days reminder':
+        // Filter the data for clients with reminders within 7 days
+        clientData = clientData.where((client) {
+          if (client['reminders'] != null) {
+            DateTime now = DateTime.now();
+            DateTime sevenDaysAhead = now.add(Duration(days: 7));
+            return client['reminders'].keys.any((key) {
+              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
+              return reminderDate.isBefore(sevenDaysAhead);
+            });
+          }
+          return false;
+        }).toList();
+        break;
+      case 'Within 1 month reminder':
+        // Filter the data for clients with reminders within 1 month
+        clientData = clientData.where((client) {
+          if (client['reminders'] != null) {
+            DateTime now = DateTime.now();
+            DateTime oneMonthAhead = now.add(Duration(days: 30));
+            return client['reminders'].keys.any((key) {
+              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
+              return reminderDate.isBefore(oneMonthAhead);
+            });
+          }
+          return false;
+        }).toList();
+        break;
+      case 'No reminder set':
+        // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
+        clientData = clientData.where((client) {
+          final data =
+              client.data() as Map<String, dynamic>?; // Retrieve document data
+          if (data != null) {
+            final reminders = data['reminders'];
+            return reminders == null || reminders.isEmpty;
+          }
+          return true; // Include documents where 'reminders' field doesn't exist
+        }).toList();
+        break;
+      case 'All reminders set':
+        // Filter the data for clients with 'reminders' field existing and not empty
+        clientData = clientData.where((client) {
+          final data =
+              client.data() as Map<String, dynamic>?; // Retrieve document data
+          if (data != null) {
+            final reminders = data['reminders'];
+            return reminders != null && reminders.isNotEmpty;
+          }
+          return false; // Exclude documents where 'reminders' field doesn't exist
+        }).toList();
+        break;
+    }
+    return clientData;
   }
 
   Widget _buildClientListItem(
