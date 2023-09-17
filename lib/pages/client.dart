@@ -53,6 +53,8 @@ class _ClientPageState extends State<ClientPage> {
   // Index of the client being edited
   int editingIndex = -1;
   List<List<String>> pastServices = [];
+  Stream<QuerySnapshot<Map<String, dynamic>>>? streamData;
+
   @override
   void initState() {
     super.initState();
@@ -60,6 +62,10 @@ class _ClientPageState extends State<ClientPage> {
     for (String service in salonServices) {
       serviceCheckboxes[service] = false;
     }
+    streamData = FirebaseFirestore.instance
+        .collection('Clients')
+        .orderBy('visits', descending: true)
+        .snapshots();
   }
 
   DateTime now = DateTime.now();
@@ -70,12 +76,9 @@ class _ClientPageState extends State<ClientPage> {
     'Latest visit date to oldest visit',
     'Oldest visit date to latest visit',
     'Within 2 days',
-    'Within 7 days',
-    'Within 1 month',
-    'No reminder set',
-    'All reminders set'
   ];
   String selectedFilter = 'Latest visit date to oldest visit';
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
@@ -104,6 +107,27 @@ class _ClientPageState extends State<ClientPage> {
                     setState(() {
                       selectedFilter = filterOptions[index];
                     });
+                    switch (selectedFilter) {
+                      case 'Latest visit date to oldest visit':
+                        setState(() {
+                          streamData = FirebaseFirestore.instance
+                              .collection('Clients')
+                              .orderBy('visits', descending: true)
+                              .snapshots();
+                        });
+                        break;
+                      case 'Oldest visit date to latest visit':
+                        setState(() {
+                          streamData = FirebaseFirestore.instance
+                              .collection('Clients')
+                              .orderBy('visits', descending: false)
+                              .snapshots();
+                        });
+                        break;
+                      default:
+                        // Handle any other cases or provide a default behavior
+                        break;
+                    }
                   },
                   buttons: filterOptions,
                 ),
@@ -112,23 +136,20 @@ class _ClientPageState extends State<ClientPage> {
           ),
           Expanded(
             child: StreamBuilder(
-              stream:
-                  FirebaseFirestore.instance.collection('Clients').snapshots(),
+              stream: streamData,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Text('No data available'); // Handle empty data.
                 }
                 var clientData = snapshot.data!.docs;
-                List<QueryDocumentSnapshot<Map<String, dynamic>>> filteredData =
-                    filterClientData(clientData);
 
                 return ListView.builder(
-                  itemCount: filteredData.length,
+                  itemCount: clientData.length,
                   itemBuilder: (context, index) {
                     var clientData = snapshot.data!.docs;
                     return Column(
                       children: [
-                        _buildClientListItem(filteredData, index),
+                        _buildClientListItem(clientData, index),
                         const Divider(),
                       ],
                     );
@@ -156,95 +177,6 @@ class _ClientPageState extends State<ClientPage> {
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  filterClientData(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData) {
-    switch (selectedFilter) {
-      case 'Latest visit date to oldest visit':
-        // Sort the data by visit date in descending order
-        clientData.sort((a, b) {
-          var dateA = a['visits'].keys.last;
-          var dateB = b['visits'].keys.last;
-          return dateB.compareTo(dateA);
-        });
-        break;
-      case 'Oldest visit date to latest visit':
-        // Sort the data by visit date in ascending order
-        clientData.sort((a, b) {
-          var dateA = a['visits'].keys.last;
-          var dateB = b['visits'].keys.last;
-          return dateA.compareTo(dateB);
-        });
-        break;
-      case 'Within 2 days reminder':
-        // Filter the data for clients with reminders within 2 days
-        clientData = clientData.where((client) {
-          if (client['reminders'] != null) {
-            DateTime now = DateTime.now();
-            DateTime twoDaysAhead = now.add(Duration(days: 2));
-            return client['reminders'].keys.any((key) {
-              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
-              return reminderDate.isBefore(twoDaysAhead);
-            });
-          }
-          return false;
-        }).toList();
-        break;
-      case 'Within 7 days reminder':
-        // Filter the data for clients with reminders within 7 days
-        clientData = clientData.where((client) {
-          if (client['reminders'] != null) {
-            DateTime now = DateTime.now();
-            DateTime sevenDaysAhead = now.add(Duration(days: 7));
-            return client['reminders'].keys.any((key) {
-              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
-              return reminderDate.isBefore(sevenDaysAhead);
-            });
-          }
-          return false;
-        }).toList();
-        break;
-      case 'Within 1 month reminder':
-        // Filter the data for clients with reminders within 1 month
-        clientData = clientData.where((client) {
-          if (client['reminders'] != null) {
-            DateTime now = DateTime.now();
-            DateTime oneMonthAhead = now.add(Duration(days: 30));
-            return client['reminders'].keys.any((key) {
-              DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
-              return reminderDate.isBefore(oneMonthAhead);
-            });
-          }
-          return false;
-        }).toList();
-        break;
-      case 'No reminder set':
-        // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
-        clientData = clientData.where((client) {
-          final data =
-              client.data() as Map<String, dynamic>?; // Retrieve document data
-          if (data != null) {
-            final reminders = data['reminders'];
-            return reminders == null || reminders.isEmpty;
-          }
-          return true; // Include documents where 'reminders' field doesn't exist
-        }).toList();
-        break;
-      case 'All reminders set':
-        // Filter the data for clients with 'reminders' field existing and not empty
-        clientData = clientData.where((client) {
-          final data =
-              client.data() as Map<String, dynamic>?; // Retrieve document data
-          if (data != null) {
-            final reminders = data['reminders'];
-            return reminders != null && reminders.isNotEmpty;
-          }
-          return false; // Exclude documents where 'reminders' field doesn't exist
-        }).toList();
-        break;
-    }
-    return clientData;
   }
 
   Widget _buildClientListItem(
@@ -696,7 +628,6 @@ class _ClientPageState extends State<ClientPage> {
                                             trailing: IconButton(
                                               icon: const Icon(Icons.delete),
                                               onPressed: () {
-                                                // Delete the card from Firestore
                                                 ClientService().deleteReminder(
                                                   phoneNumber,
                                                   reminderKey,
