@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:group_button/group_button.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -62,43 +63,73 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   DateTime now = DateTime.now();
-
+  List<String> filter = [
+    'Latest visit date to oldest visit',
+    'Oldest visit date to latest visit',
+    'Within 2 days',
+    'Within 7 days',
+    'Within 1 month',
+    'No reminder set',
+    'All reminders set'
+  ];
   @override
   Widget build(BuildContext context) {
-    double w = MediaQuery.of(context).size.width;
-    double h = MediaQuery.of(context).size.height;
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(
           'Client Page',
           style: TextStyle(
-            fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 20,
+            fontSize: isWeb(context) ? w / 80 : w / 20,
           ),
         ),
       ),
-      body: StreamBuilder(
-          stream: FirebaseFirestore.instance.collection('Clients').snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator(); // Loading indicator while data is being fetched.
-            }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Text('No data available'); // Handle empty data.
-            }
-            var clientData = snapshot.data!.docs;
-
-            return ListView.builder(
-              itemCount: clientData.length,
-              itemBuilder: (context, index) {
+      body: Column(
+        children: [
+          SizedBox(
+            height: 50,
+            child: ListView(
+              scrollDirection: Axis.horizontal, // Enable horizontal scrolling
+              children: [
+                GroupButton(
+                  isRadio: true,
+                  onSelected: (value, index, isSelected) {
+                    // Handle button selection here
+                  },
+                  buttons: filter,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('Clients').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text('No data available'); // Handle empty data.
+                }
                 var clientData = snapshot.data!.docs;
-                return Column(children: [
-                  _buildClientListItem(clientData, index),
-                  const Divider(),
-                ]);
+
+                return ListView.builder(
+                  itemCount: clientData.length,
+                  itemBuilder: (context, index) {
+                    var clientData = snapshot.data!.docs;
+                    return Column(
+                      children: [
+                        _buildClientListItem(clientData, index),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                );
               },
-            );
-          }),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Reset the editing index and clear text fields
@@ -113,7 +144,7 @@ class _ClientPageState extends State<ClientPage> {
           });
           _showAddClientDialog();
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

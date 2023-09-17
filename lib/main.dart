@@ -1,3 +1,4 @@
+import 'package:artisan/components/helper.dart';
 import 'package:artisan/firebase_options.dart';
 import 'package:artisan/services/authentication/auth_gate.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Artisan',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: MyCustomScrollBehavior(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
