@@ -78,24 +78,38 @@ class _ClientPageState extends State<ClientPage> {
     'No reminder set'
   ];
   String selectedFilter = 'Latest visit date to oldest visit';
+  bool isReminderInFewDays = false;
+  bool isNoReminderSet = false;
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamDataFilterOptions(
       String selectedFilter) {
     switch (selectedFilter) {
       case 'Latest visit date to oldest visit':
+        isReminderInFewDays = false;
+        isNoReminderSet = false;
         streamData = FirebaseFirestore.instance
             .collection('Clients')
             .orderBy('visits', descending: true)
             .snapshots();
         break;
       case 'Oldest visit date to latest visit':
+        isReminderInFewDays = false;
+        isNoReminderSet = false;
         streamData = FirebaseFirestore.instance
             .collection('Clients')
             .orderBy('visits', descending: false)
             .snapshots();
         break;
       case 'Within 2 days':
+        isReminderInFewDays = true;
+        isNoReminderSet = false;
+        streamData = FirebaseFirestore.instance
+            .collection('Clients')
+            .orderBy('reminders', descending: true)
+            .snapshots();
         break;
       case 'No reminder set':
+        isReminderInFewDays = false;
+        isNoReminderSet = true;
         streamData = FirebaseFirestore.instance
             .collection('Clients')
             .orderBy('reminders', descending: true)
@@ -111,6 +125,7 @@ class _ClientPageState extends State<ClientPage> {
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -147,13 +162,10 @@ class _ClientPageState extends State<ClientPage> {
               stream: streamData,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Text('No data available'); // Handle empty data.
+                  return const Text('No data available');
                 }
                 var clientData = snapshot.data!.docs;
-
-                // Filter out clients with no reminders set
-                clientData = filterNoReminderSet(clientData);
-
+                clientData = filtering(clientData);
                 return ListView.builder(
                   itemCount: clientData.length,
                   itemBuilder: (context, index) {
@@ -189,7 +201,7 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  List<QueryDocumentSnapshot<Map<String, dynamic>>> filterNoReminderSet(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> filtering(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData,
   ) {
     if (selectedFilter == 'No reminder set') {
@@ -216,11 +228,14 @@ class _ClientPageState extends State<ClientPage> {
 
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    // write program to display a text if clientData is empty
+
     streamDataFilterOptions(selectedFilter);
-    clientData = filterNoReminderSet(clientData);
+    clientData = filtering(clientData);
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
+
     DateTime dateTime = DateTime(now.year, now.month, now.day);
 
     Map<String, dynamic> visits = client['visits'];
@@ -351,469 +366,500 @@ class _ClientPageState extends State<ClientPage> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(
-              Icons.access_alarm_outlined,
-              color: Colors.deepPurple,
-            ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return StatefulBuilder(
-                    builder: (context, setState) {
-                      return AlertDialog(
-                        title: Text(
-                          'Reminder',
-                          style: TextStyle(
-                            fontSize: _ClientPageState().isWeb(context)
-                                ? w / 60
-                                : w / 30,
-                          ),
-                        ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10.0),
-                          ),
-                        ),
-                        content: SizedBox(
-                          width: w * 0.4,
-                          height: h * 0.6,
-                          child: Column(
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () async {
-                                  Navigator.of(context).pop();
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      DateTime selectedDate = DateTime
-                                          .now(); // Initialize with the current date and time
-                                      TimeOfDay selectedTime = TimeOfDay.now();
-                                      List<String> selectedServices =
-                                          []; // Initialize an empty list for selected services
-
-                                      return StatefulBuilder(
-                                        builder: (BuildContext context,
-                                            StateSetter setState) {
-                                          return AlertDialog(
-                                            title: Text(
-                                              'Add Reminders',
-                                              style: TextStyle(
-                                                fontSize: isWeb(context)
-                                                    ? w / 80
-                                                    : w / 30,
-                                              ),
-                                            ),
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(10.0),
-                                              ),
-                                            ),
-                                            content: SizedBox(
-                                              width: w * 0.4,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Date:',
-                                                    style: TextStyle(
-                                                      fontSize: isWeb(context)
-                                                          ? w / 80
-                                                          : w / 30,
-                                                    ),
-                                                  ),
-                                                  ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      final date =
-                                                          await pickDate();
-                                                      if (date != null) {
-                                                        setState(() {
-                                                          selectedDate = date;
-                                                        });
-                                                      }
-                                                    },
-                                                    icon: const Icon(
-                                                        Icons.calendar_today),
-                                                    label: Text(
-                                                      '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                                                      style: TextStyle(
-                                                        fontSize: isWeb(context)
-                                                            ? w / 60
-                                                            : w / 30,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Time:',
-                                                    style: TextStyle(
-                                                      fontSize: isWeb(context)
-                                                          ? w / 80
-                                                          : w / 30,
-                                                    ),
-                                                  ),
-                                                  ElevatedButton.icon(
-                                                    onPressed: () async {
-                                                      // Inside your onPressed method
-                                                      final time =
-                                                          await pickTime();
-                                                      if (time != null) {
-                                                        setState(() {
-                                                          selectedTime =
-                                                              TimeOfDay(
-                                                                  hour:
-                                                                      time.hour,
-                                                                  minute: time
-                                                                      .minute);
-                                                        });
-                                                      }
-                                                    },
-                                                    icon: const Icon(
-                                                        Icons.access_time),
-                                                    label: Text(
-                                                      selectedTime
-                                                          .format(context),
-                                                      style: TextStyle(
-                                                        fontSize: isWeb(context)
-                                                            ? w / 60
-                                                            : w / 30,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    'Select Services:',
-                                                    style: TextStyle(
-                                                      fontSize: isWeb(context)
-                                                          ? w / 80
-                                                          : w / 30,
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    child: ListView(
-                                                      children: _ClientPageState
-                                                          .salonServices
-                                                          .map((service) {
-                                                        return CheckboxListTile(
-                                                          title: Text(service),
-                                                          value:
-                                                              selectedServices
-                                                                  .contains(
-                                                                      service),
-                                                          onChanged:
-                                                              (bool? value) {
-                                                            setState(() {
-                                                              if (value !=
-                                                                  null) {
-                                                                if (value) {
-                                                                  selectedServices
-                                                                      .add(
-                                                                          service); // Check the checkbox
-                                                                } else {
-                                                                  selectedServices
-                                                                      .remove(
-                                                                          service); // Uncheck the checkbox
-                                                                }
-                                                              }
-                                                            });
-                                                          },
-                                                        );
-                                                      }).toList(),
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: [
-                                                      ElevatedButton(
-                                                        onPressed: () {
-                                                          // save appointment
-                                                          ClientService()
-                                                              .addReminderToClient(
-                                                                  phoneNumber,
-                                                                  selectedDate,
-                                                                  selectedTime,
-                                                                  selectedServices);
-                                                          Navigator.of(context)
-                                                              .pop(); // Close this dialog
-                                                        },
-                                                        child: Text(
-                                                          'OK',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                _ClientPageState()
-                                                                        .isWeb(
-                                                                            context)
-                                                                    ? w / 60
-                                                                    : w / 30,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 10),
-                                                      ElevatedButton(
-                                                        onPressed: () {
-                                                          // Handle Cancel button action, e.g., cancel appointment
-                                                          Navigator.of(context)
-                                                              .pop(); // Close this dialog
-                                                        },
-                                                        child: Text(
-                                                          'Cancel',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                _ClientPageState()
-                                                                        .isWeb(
-                                                                            context)
-                                                                    ? w / 60
-                                                                    : w / 30,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                                icon: const Icon(Icons.add),
-                                label: Text(
-                                  'Add',
-                                  style: TextStyle(
-                                    fontSize: _ClientPageState().isWeb(context)
-                                        ? w / 60
-                                        : w / 30,
-                                  ),
+          !isReminderInFewDays
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.access_alarm_outlined,
+                    color: Colors.deepPurple,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return StatefulBuilder(
+                          builder: (context, setState) {
+                            return AlertDialog(
+                              title: Text(
+                                'Reminder',
+                                style: TextStyle(
+                                  fontSize: _ClientPageState().isWeb(context)
+                                      ? w / 60
+                                      : w / 30,
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                              Expanded(
-                                child: StreamBuilder(
-                                  stream: streamData,
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData ||
-                                        snapshot.data!.docs.isEmpty) {
-                                      return Text(
-                                        'No data available',
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(10.0),
+                                ),
+                              ),
+                              content: SizedBox(
+                                width: w * 0.4,
+                                height: h * 0.6,
+                                child: Column(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            DateTime selectedDate = DateTime
+                                                .now(); // Initialize with the current date and time
+                                            TimeOfDay selectedTime =
+                                                TimeOfDay.now();
+                                            List<String> selectedServices =
+                                                []; // Initialize an empty list for selected services
+
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context,
+                                                  StateSetter setState) {
+                                                return AlertDialog(
+                                                  title: Text(
+                                                    'Add Reminders',
+                                                    style: TextStyle(
+                                                      fontSize: isWeb(context)
+                                                          ? w / 80
+                                                          : w / 30,
+                                                    ),
+                                                  ),
+                                                  shape:
+                                                      const RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                      Radius.circular(10.0),
+                                                    ),
+                                                  ),
+                                                  content: SizedBox(
+                                                    width: w * 0.4,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceAround,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          'Date:',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                isWeb(context)
+                                                                    ? w / 80
+                                                                    : w / 30,
+                                                          ),
+                                                        ),
+                                                        ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            final date =
+                                                                await pickDate();
+                                                            if (date != null) {
+                                                              setState(() {
+                                                                selectedDate =
+                                                                    date;
+                                                              });
+                                                            }
+                                                          },
+                                                          icon: const Icon(Icons
+                                                              .calendar_today),
+                                                          label: Text(
+                                                            '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                                            style: TextStyle(
+                                                              fontSize:
+                                                                  isWeb(context)
+                                                                      ? w / 60
+                                                                      : w / 30,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'Time:',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                isWeb(context)
+                                                                    ? w / 80
+                                                                    : w / 30,
+                                                          ),
+                                                        ),
+                                                        ElevatedButton.icon(
+                                                          onPressed: () async {
+                                                            // Inside your onPressed method
+                                                            final time =
+                                                                await pickTime();
+                                                            if (time != null) {
+                                                              setState(() {
+                                                                selectedTime = TimeOfDay(
+                                                                    hour: time
+                                                                        .hour,
+                                                                    minute: time
+                                                                        .minute);
+                                                              });
+                                                            }
+                                                          },
+                                                          icon: const Icon(Icons
+                                                              .access_time),
+                                                          label: Text(
+                                                            selectedTime.format(
+                                                                context),
+                                                            style: TextStyle(
+                                                              fontSize:
+                                                                  isWeb(context)
+                                                                      ? w / 60
+                                                                      : w / 30,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'Select Services:',
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                isWeb(context)
+                                                                    ? w / 80
+                                                                    : w / 30,
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: ListView(
+                                                            children:
+                                                                _ClientPageState
+                                                                    .salonServices
+                                                                    .map(
+                                                                        (service) {
+                                                              return CheckboxListTile(
+                                                                title: Text(
+                                                                    service),
+                                                                value: selectedServices
+                                                                    .contains(
+                                                                        service),
+                                                                onChanged:
+                                                                    (bool?
+                                                                        value) {
+                                                                  setState(() {
+                                                                    if (value !=
+                                                                        null) {
+                                                                      if (value) {
+                                                                        selectedServices
+                                                                            .add(service); // Check the checkbox
+                                                                      } else {
+                                                                        selectedServices
+                                                                            .remove(service); // Uncheck the checkbox
+                                                                      }
+                                                                    }
+                                                                  });
+                                                                },
+                                                              );
+                                                            }).toList(),
+                                                          ),
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            ElevatedButton(
+                                                              onPressed: () {
+                                                                ClientService().addReminderToClient(
+                                                                    phoneNumber,
+                                                                    selectedDate,
+                                                                    selectedTime,
+                                                                    selectedServices);
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(); // Close this dialog
+                                                              },
+                                                              child: Text(
+                                                                'OK',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: _ClientPageState()
+                                                                          .isWeb(
+                                                                              context)
+                                                                      ? w / 60
+                                                                      : w / 30,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 10),
+                                                            ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(); // Close this dialog
+                                                              },
+                                                              child: Text(
+                                                                'Cancel',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: _ClientPageState()
+                                                                          .isWeb(
+                                                                              context)
+                                                                      ? w / 60
+                                                                      : w / 30,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                      icon: const Icon(Icons.add),
+                                      label: Text(
+                                        'Add',
                                         style: TextStyle(
                                           fontSize:
                                               _ClientPageState().isWeb(context)
                                                   ? w / 60
                                                   : w / 30,
                                         ),
-                                      );
-                                    }
-
-                                    var clientData = snapshot.data!.docs;
-                                    clientData =
-                                        filterNoReminderSet(clientData);
-                                    var reminder = clientData[index].data();
-
-                                    if (reminder == null ||
-                                        !reminder.containsKey('reminders')) {
-                                      return const Text('NO DATA FOUND');
-                                    }
-                                    Map<String, dynamic> reminders =
-                                        reminder['reminders'];
-
-                                    if (reminders == null ||
-                                        reminders.isEmpty) {
-                                      return const Text('No reminders set');
-                                    }
-
-                                    return ListView.builder(
-                                      itemCount: reminders.length,
-                                      itemBuilder: (context, index) {
-                                        // Get the reminder keys (date and time) as a List
-                                        List<String> reminderKeys =
-                                            reminders.keys.toList();
-
-                                        // Extract the reminder data for the current index
-                                        Map<String, dynamic> reminderData =
-                                            reminders[reminderKeys[index]];
-
-                                        // Get the date and time from the reminder data
-                                        String date = reminderData['date'];
-                                        String time = reminderData['time'];
-
-                                        // Construct the reminder key
-                                        String reminderKey = '$date $time';
-
-                                        // Extract service list
-                                        List<String> services =
-                                            List<String>.from(
-                                                reminderData['services']);
-
-                                        return Card(
-                                          child: ListTile(
-                                            title: Text(
-                                              'Reminder set for $date at $time for ${services.join(", ")}',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Expanded(
+                                      child: StreamBuilder(
+                                        stream: streamData,
+                                        builder: (context, snapshot) {
+                                          if (!snapshot.hasData ||
+                                              snapshot.data!.docs.isEmpty) {
+                                            return Text(
+                                              'No data available',
                                               style: TextStyle(
                                                 fontSize: _ClientPageState()
                                                         .isWeb(context)
                                                     ? w / 60
-                                                    : w / 35,
+                                                    : w / 30,
                                               ),
+                                            );
+                                          }
+
+                                          var clientData = snapshot.data!.docs;
+                                          clientData = filtering(clientData);
+                                          var reminder =
+                                              clientData[index].data();
+
+                                          if (!reminder
+                                              .containsKey('reminders')) {
+                                            return const Text('NO DATA FOUND');
+                                          }
+                                          Map<String, dynamic> reminders =
+                                              reminder['reminders'];
+
+                                          if (reminders.isEmpty) {
+                                            return const Text(
+                                                'No reminders is set');
+                                          }
+
+                                          return ListView.builder(
+                                            itemCount: reminders.length,
+                                            itemBuilder: (context, index) {
+                                              // Get the reminder keys (date and time) as a List
+                                              List<String> reminderKeys =
+                                                  reminders.keys.toList();
+
+                                              // Extract the reminder data for the current index
+                                              Map<String, dynamic>
+                                                  reminderData = reminders[
+                                                      reminderKeys[index]];
+
+                                              // Get the date and time from the reminder data
+                                              String date =
+                                                  reminderData['date'];
+                                              String time =
+                                                  reminderData['time'];
+
+                                              // Construct the reminder key
+                                              String reminderKey =
+                                                  '$date $time';
+
+                                              // Extract service list
+                                              List<String> services =
+                                                  List<String>.from(
+                                                      reminderData['services']);
+
+                                              return Card(
+                                                child: ListTile(
+                                                  title: Text(
+                                                    'Reminder set for $date at $time for ${services.join(", ")}',
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          _ClientPageState()
+                                                                  .isWeb(
+                                                                      context)
+                                                              ? w / 60
+                                                              : w / 35,
+                                                    ),
+                                                  ),
+                                                  trailing: IconButton(
+                                                    icon: const Icon(
+                                                        Icons.delete),
+                                                    onPressed: () {
+                                                      ClientService()
+                                                          .deleteReminder(
+                                                        phoneNumber,
+                                                        reminderKey,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                )
+              : Container(),
+          !isNoReminderSet
+              ? SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text(
+                              'Send Reminders',
+                              style: TextStyle(
+                                fontSize: _ClientPageState().isWeb(context)
+                                    ? w / 60
+                                    : w / 30,
+                              ),
+                            ),
+                            content: SizedBox(
+                              width: w * 0.4,
+                              height: h * 0.6,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: StreamBuilder(
+                                      stream: streamData,
+                                      builder: (context, snapshot) {
+                                        // if (snapshot.connectionState ==
+                                        //     ConnectionState.waiting) {}
+                                        if (!snapshot.hasData ||
+                                            snapshot.data!.docs.isEmpty) {
+                                          return Text(
+                                            'No data available',
+                                            style: TextStyle(
+                                              fontSize: _ClientPageState()
+                                                      .isWeb(context)
+                                                  ? w / 60
+                                                  : w / 30,
                                             ),
-                                            trailing: IconButton(
-                                              icon: const Icon(Icons.delete),
-                                              onPressed: () {
-                                                ClientService().deleteReminder(
-                                                  phoneNumber,
-                                                  reminderKey,
-                                                );
-                                              },
-                                            ),
-                                          ),
+                                          );
+                                        }
+                                        var clientData = snapshot.data!.docs;
+                                        clientData = filtering(clientData);
+                                        var reminder = clientData[index].data();
+
+                                        if (!reminder
+                                            .containsKey('reminders')) {
+                                          return const Text('NO DATA FOUND');
+                                        }
+                                        Map<String, dynamic> reminders =
+                                            reminder['reminders'];
+
+                                        if (reminders.isEmpty) {
+                                          return const Text('No reminders set');
+                                        }
+
+                                        return ListView.builder(
+                                          itemCount: reminders.length,
+                                          itemBuilder: (context, index) {
+                                            List<String> reminderKeys =
+                                                reminders.keys.toList();
+                                            Map<String, dynamic> reminderData =
+                                                reminders[reminderKeys[index]];
+                                            String date = reminderData['date'];
+                                            String time = reminderData['time'];
+                                            String reminderKey = '$date $time';
+                                            List<String> services =
+                                                List<String>.from(
+                                                    reminderData['services']);
+
+                                            return Card(
+                                              child: Column(
+                                                children: [
+                                                  ListTile(
+                                                    title: Text(
+                                                      'Reminder set for $date at $time for ${services.join(", ")}',
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            _ClientPageState()
+                                                                    .isWeb(
+                                                                        context)
+                                                                ? w / 80
+                                                                : w / 35,
+                                                      ),
+                                                    ),
+                                                    trailing: IconButton(
+                                                      onPressed: () async {
+                                                        launchWhatsAppUri(
+                                                          phoneNumber,
+                                                          visitDates.last,
+                                                          date,
+                                                          time,
+                                                          services,
+                                                        );
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.send),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         );
                                       },
-                                    );
-                                  },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Close',
+                                  style: TextStyle(
+                                    fontSize: _ClientPageState().isWeb(context)
+                                        ? w / 80
+                                        : w / 45,
+                                  ),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              );
-            },
-          ),
-          SizedBox(
-            width: 36,
-            height: 36,
-            child: IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        'Send Reminders',
-                        style: TextStyle(
-                          fontSize: _ClientPageState().isWeb(context)
-                              ? w / 60
-                              : w / 30,
-                        ),
-                      ),
-                      content: SizedBox(
-                        width: w * 0.4,
-                        height: h * 0.6,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: StreamBuilder(
-                                stream: streamData,
-                                builder: (context, snapshot) {
-                                  // if (snapshot.connectionState ==
-                                  //     ConnectionState.waiting) {}
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.docs.isEmpty) {
-                                    return Text(
-                                      'No data available',
-                                      style: TextStyle(
-                                        fontSize:
-                                            _ClientPageState().isWeb(context)
-                                                ? w / 60
-                                                : w / 30,
-                                      ),
-                                    );
-                                  }
-                                  var clientData = snapshot.data!.docs;
-                                  clientData = filterNoReminderSet(clientData);
-                                  var reminder = clientData[index].data();
-
-                                  if (reminder['reminders'] == null ||
-                                      reminder['reminders'].isEmpty) {
-                                    return const Text('NO DATA FOUND');
-                                  }
-
-                                  Map<String, dynamic> reminders =
-                                      reminder['reminders'];
-
-                                  return ListView.builder(
-                                    itemCount: reminders.length,
-                                    itemBuilder: (context, index) {
-                                      List<String> reminderKeys =
-                                          reminders.keys.toList();
-                                      Map<String, dynamic> reminderData =
-                                          reminders[reminderKeys[index]];
-                                      String date = reminderData['date'];
-                                      String time = reminderData['time'];
-                                      String reminderKey = '$date $time';
-                                      List<String> services = List<String>.from(
-                                          reminderData['services']);
-
-                                      return Card(
-                                        child: Column(
-                                          children: [
-                                            ListTile(
-                                              title: Text(
-                                                'Reminder set for $date at $time for ${services.join(", ")}',
-                                                style: TextStyle(
-                                                  fontSize: _ClientPageState()
-                                                          .isWeb(context)
-                                                      ? w / 80
-                                                      : w / 35,
-                                                ),
-                                              ),
-                                              trailing: IconButton(
-                                                onPressed: () async {
-                                                  launchWhatsAppUri(
-                                                    phoneNumber,
-                                                    visitDates.last,
-                                                    date,
-                                                    time,
-                                                    services,
-                                                  );
-                                                },
-                                                icon: const Icon(Icons.send),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'Close',
-                            style: TextStyle(
-                              fontSize: _ClientPageState().isWeb(context)
-                                  ? w / 80
-                                  : w / 45,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              icon: SvgPicture.asset(
-                'assets/images/whatsapp.svg',
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
+                    icon: SvgPicture.asset(
+                      'assets/images/whatsapp.svg',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              : Container()
         ],
       ),
     );
