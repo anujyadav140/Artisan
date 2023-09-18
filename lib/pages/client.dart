@@ -93,6 +93,8 @@ class _ClientPageState extends State<ClientPage> {
             .orderBy('visits', descending: false)
             .snapshots();
         break;
+      case 'Within 2 days':
+        break;
       case 'No reminder set':
         streamData = FirebaseFirestore.instance
             .collection('Clients')
@@ -149,15 +151,8 @@ class _ClientPageState extends State<ClientPage> {
                 }
                 var clientData = snapshot.data!.docs;
 
-                // Apply filter based on the selectedFilter
-                if (selectedFilter == 'No reminder set') {
-                  // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
-                  clientData = clientData.where((client) {
-                    final data = client.data();
-                    final reminders = data['reminders'];
-                    return reminders == null || reminders.isEmpty;
-                  }).toList();
-                }
+                // Filter out clients with no reminders set
+                clientData = filterNoReminderSet(clientData);
 
                 return ListView.builder(
                   itemCount: clientData.length,
@@ -195,13 +190,25 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   List<QueryDocumentSnapshot<Map<String, dynamic>>> filterNoReminderSet(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData) {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData,
+  ) {
     if (selectedFilter == 'No reminder set') {
-      // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
       clientData = clientData.where((client) {
         final data = client.data();
         final reminders = data['reminders'];
         return reminders == null || reminders.isEmpty;
+      }).toList();
+    } else if (selectedFilter == 'Within 2 days') {
+      clientData = clientData.where((client) {
+        if (client['reminders'] != null) {
+          DateTime now = DateTime.now();
+          DateTime twoDaysAhead = now.add(const Duration(days: 2));
+          return client['reminders'].keys.any((key) {
+            DateTime reminderDate = DateTime.parse(key.split(" ")[0]);
+            return reminderDate.isBefore(twoDaysAhead);
+          });
+        }
+        return false;
       }).toList();
     }
     return clientData;
@@ -210,7 +217,6 @@ class _ClientPageState extends State<ClientPage> {
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
     streamDataFilterOptions(selectedFilter);
-    print(index);
     clientData = filterNoReminderSet(clientData);
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
@@ -377,7 +383,6 @@ class _ClientPageState extends State<ClientPage> {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () async {
-                                  print("fuck");
                                   Navigator.of(context).pop();
                                   showDialog(
                                     context: context,
@@ -592,10 +597,6 @@ class _ClientPageState extends State<ClientPage> {
                                 child: StreamBuilder(
                                   stream: streamData,
                                   builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const CircularProgressIndicator();
-                                    }
                                     if (!snapshot.hasData ||
                                         snapshot.data!.docs.isEmpty) {
                                       return Text(
@@ -608,19 +609,23 @@ class _ClientPageState extends State<ClientPage> {
                                         ),
                                       );
                                     }
-                                    var clientData = snapshot.data!.docs;
 
+                                    var clientData = snapshot.data!.docs;
                                     clientData =
                                         filterNoReminderSet(clientData);
                                     var reminder = clientData[index].data();
 
-                                    if (reminder['reminders'] == null ||
-                                        reminder['reminders'].isEmpty) {
+                                    if (reminder == null ||
+                                        !reminder.containsKey('reminders')) {
                                       return const Text('NO DATA FOUND');
                                     }
-
                                     Map<String, dynamic> reminders =
                                         reminder['reminders'];
+
+                                    if (reminders == null ||
+                                        reminders.isEmpty) {
+                                      return const Text('No reminders set');
+                                    }
 
                                     return ListView.builder(
                                       itemCount: reminders.length,
@@ -708,10 +713,8 @@ class _ClientPageState extends State<ClientPage> {
                               child: StreamBuilder(
                                 stream: streamData,
                                 builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  }
+                                  // if (snapshot.connectionState ==
+                                  //     ConnectionState.waiting) {}
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
                                     return Text(
@@ -725,6 +728,7 @@ class _ClientPageState extends State<ClientPage> {
                                     );
                                   }
                                   var clientData = snapshot.data!.docs;
+                                  clientData = filterNoReminderSet(clientData);
                                   var reminder = clientData[index].data();
 
                                   if (reminder['reminders'] == null ||
@@ -732,9 +736,6 @@ class _ClientPageState extends State<ClientPage> {
                                     return const Text('NO DATA FOUND');
                                   }
 
-                                  List<List<String>> serviceLists = [];
-                                  List<String> dateList = [];
-                                  List<String> timeList = [];
                                   Map<String, dynamic> reminders =
                                       reminder['reminders'];
 
