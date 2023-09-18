@@ -55,4 +55,22 @@ class AuthService extends ChangeNotifier {
   Future<void> logout() async {
     return await FirebaseAuth.instance.signOut();
   }
+
+  bool _searchResult = false;
+
+  bool get searchResult => _searchResult;
+
+  set searchResult(bool value) {
+    _searchResult = value;
+    notifyListeners();
+  }
+
+  String _searchQuery = '';
+
+  String get searchQuery => _searchQuery;
+
+  set searchQuery(String value) {
+    _searchQuery = value.toString();
+    notifyListeners();
+  }
 }

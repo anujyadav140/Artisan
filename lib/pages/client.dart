@@ -11,6 +11,77 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+class MySearchDelegate extends SearchDelegate {
+  @override
+  Widget? buildLeading(BuildContext context) => IconButton(
+      onPressed: () {
+        close(context, null);
+      },
+      icon: Icon(Icons.arrow_back));
+
+  @override
+  List<Widget>? buildActions(BuildContext context) => [
+        IconButton(
+            onPressed: () {
+              if (query.isEmpty) {
+                close(context, null);
+              }
+              query = '';
+            },
+            icon: Icon(Icons.clear))
+      ];
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return Container();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('Clients').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+
+        final suggestions = <String>[];
+        // Iterate through the documents in the collection
+        for (final doc in snapshot.data!.docs) {
+          final phoneNumber =
+              doc['phoneNumber']; // Assuming the field name is 'phone'
+          if (phoneNumber != null && phoneNumber is String) {
+            suggestions.add(phoneNumber);
+          }
+        }
+
+        // Filter the suggestions based on the current query
+        final filteredSuggestions = query.isEmpty
+            ? []
+            : suggestions.where((suggestion) {
+                return suggestion.toLowerCase().contains(query.toLowerCase());
+              }).toList();
+
+        return ListView.builder(
+          itemCount: filteredSuggestions.length,
+          itemBuilder: (context, index) {
+            final suggestion = filteredSuggestions[index];
+            return ListTile(
+              title: Text(suggestion),
+              onTap: () {
+                query = suggestion;
+                context.read<AuthService>().searchQuery = query;
+                context.read<AuthService>().searchResult = true;
+                close(context, null);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class ClientPage extends StatefulWidget {
   const ClientPage({Key? key}) : super(key: key);
 
@@ -61,6 +132,7 @@ class _ClientPageState extends State<ClientPage> {
     for (String service in salonServices) {
       serviceCheckboxes[service] = false;
     }
+
     streamData = FirebaseFirestore.instance
         .collection('Clients')
         .orderBy('visits', descending: true)
@@ -83,6 +155,9 @@ class _ClientPageState extends State<ClientPage> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamDataFilterOptions(
       String selectedFilter) {
     switch (selectedFilter) {
+      case '':
+        print("hello world");
+        break;
       case 'Latest visit date to oldest visit':
         isReminderInFewDays = false;
         isNoReminderSet = false;
@@ -125,10 +200,18 @@ class _ClientPageState extends State<ClientPage> {
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
-
+    final searchResult = context.watch<AuthService>().searchResult;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            onPressed: () {
+              showSearch(context: context, delegate: MySearchDelegate());
+            },
+            icon: Icon(Icons.search),
+          ),
+        ],
         title: Text(
           'Client Page',
           style: TextStyle(
@@ -228,10 +311,26 @@ class _ClientPageState extends State<ClientPage> {
 
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    final searchQuery = context.read<AuthService>().searchQuery;
+    final searchResult = context.read<AuthService>().searchResult;
+    print(searchQuery);
+    print(searchResult);
     // write program to display a text if clientData is empty
-
-    streamDataFilterOptions(selectedFilter);
-    clientData = filtering(clientData);
+    if (searchResult) {
+      Future.delayed(const Duration(milliseconds: 5), () {
+        setState(() {
+          streamData = FirebaseFirestore.instance
+              .collection('Clients')
+              .where('phoneNumber', isEqualTo: searchQuery)
+              .snapshots();
+        });
+      });
+      context.read<AuthService>().searchQuery = '';
+      context.read<AuthService>().searchResult = false;
+    } else {
+      streamDataFilterOptions(selectedFilter);
+      clientData = filtering(clientData);
+    }
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
