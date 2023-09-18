@@ -194,10 +194,8 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  Widget _buildClientListItem(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
-    streamDataFilterOptions(selectedFilter);
-    print(index);
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> filterNoReminderSet(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData) {
     if (selectedFilter == 'No reminder set') {
       // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
       clientData = clientData.where((client) {
@@ -206,6 +204,14 @@ class _ClientPageState extends State<ClientPage> {
         return reminders == null || reminders.isEmpty;
       }).toList();
     }
+    return clientData;
+  }
+
+  Widget _buildClientListItem(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    streamDataFilterOptions(selectedFilter);
+    print(index);
+    clientData = filterNoReminderSet(clientData);
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
@@ -604,14 +610,8 @@ class _ClientPageState extends State<ClientPage> {
                                     }
                                     var clientData = snapshot.data!.docs;
 
-                                    if (selectedFilter == 'No reminder set') {
-                                      clientData = clientData.where((client) {
-                                        final data = client.data();
-                                        final reminders = data['reminders'];
-                                        return reminders == null ||
-                                            reminders.isEmpty;
-                                      }).toList();
-                                    }
+                                    clientData =
+                                        filterNoReminderSet(clientData);
                                     var reminder = clientData[index].data();
 
                                     if (reminder['reminders'] == null ||
