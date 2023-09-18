@@ -93,10 +93,11 @@ class _ClientPageState extends State<ClientPage> {
             .orderBy('visits', descending: false)
             .snapshots();
         break;
-      case 'Within 2 days':
-        break;
-
       case 'No reminder set':
+        streamData = FirebaseFirestore.instance
+            .collection('Clients')
+            .orderBy('reminders', descending: true)
+            .snapshots();
         break;
       default:
         break;
@@ -148,10 +149,19 @@ class _ClientPageState extends State<ClientPage> {
                 }
                 var clientData = snapshot.data!.docs;
 
+                // Apply filter based on the selectedFilter
+                if (selectedFilter == 'No reminder set') {
+                  // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
+                  clientData = clientData.where((client) {
+                    final data = client.data();
+                    final reminders = data['reminders'];
+                    return reminders == null || reminders.isEmpty;
+                  }).toList();
+                }
+
                 return ListView.builder(
                   itemCount: clientData.length,
                   itemBuilder: (context, index) {
-                    var clientData = snapshot.data!.docs;
                     return Column(
                       children: [
                         _buildClientListItem(clientData, index),
@@ -187,6 +197,15 @@ class _ClientPageState extends State<ClientPage> {
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
     streamDataFilterOptions(selectedFilter);
+    print(index);
+    if (selectedFilter == 'No reminder set') {
+      // Filter the data for clients with no reminders or where 'reminders' field doesn't exist
+      clientData = clientData.where((client) {
+        final data = client.data();
+        final reminders = data['reminders'];
+        return reminders == null || reminders.isEmpty;
+      }).toList();
+    }
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
@@ -352,6 +371,8 @@ class _ClientPageState extends State<ClientPage> {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () async {
+                                  print("fuck");
+                                  Navigator.of(context).pop();
                                   showDialog(
                                     context: context,
                                     builder: (context) {
@@ -582,6 +603,15 @@ class _ClientPageState extends State<ClientPage> {
                                       );
                                     }
                                     var clientData = snapshot.data!.docs;
+
+                                    if (selectedFilter == 'No reminder set') {
+                                      clientData = clientData.where((client) {
+                                        final data = client.data();
+                                        final reminders = data['reminders'];
+                                        return reminders == null ||
+                                            reminders.isEmpty;
+                                      }).toList();
+                                    }
                                     var reminder = clientData[index].data();
 
                                     if (reminder['reminders'] == null ||
