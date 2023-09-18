@@ -54,7 +54,6 @@ class _ClientPageState extends State<ClientPage> {
   int editingIndex = -1;
   List<List<String>> pastServices = [];
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamData;
-
   @override
   void initState() {
     super.initState();
@@ -76,8 +75,34 @@ class _ClientPageState extends State<ClientPage> {
     'Latest visit date to oldest visit',
     'Oldest visit date to latest visit',
     'Within 2 days',
+    'No reminder set'
   ];
   String selectedFilter = 'Latest visit date to oldest visit';
+  Stream<QuerySnapshot<Map<String, dynamic>>>? streamDataFilterOptions(
+      String selectedFilter) {
+    switch (selectedFilter) {
+      case 'Latest visit date to oldest visit':
+        streamData = FirebaseFirestore.instance
+            .collection('Clients')
+            .orderBy('visits', descending: true)
+            .snapshots();
+        break;
+      case 'Oldest visit date to latest visit':
+        streamData = FirebaseFirestore.instance
+            .collection('Clients')
+            .orderBy('visits', descending: false)
+            .snapshots();
+        break;
+      case 'Within 2 days':
+        break;
+
+      case 'No reminder set':
+        break;
+      default:
+        break;
+    }
+    return streamData;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,28 +131,8 @@ class _ClientPageState extends State<ClientPage> {
                   onSelected: (value, index, isSelected) {
                     setState(() {
                       selectedFilter = filterOptions[index];
+                      streamDataFilterOptions(selectedFilter);
                     });
-                    switch (selectedFilter) {
-                      case 'Latest visit date to oldest visit':
-                        setState(() {
-                          streamData = FirebaseFirestore.instance
-                              .collection('Clients')
-                              .orderBy('visits', descending: true)
-                              .snapshots();
-                        });
-                        break;
-                      case 'Oldest visit date to latest visit':
-                        setState(() {
-                          streamData = FirebaseFirestore.instance
-                              .collection('Clients')
-                              .orderBy('visits', descending: false)
-                              .snapshots();
-                        });
-                        break;
-                      default:
-                        // Handle any other cases or provide a default behavior
-                        break;
-                    }
                   },
                   buttons: filterOptions,
                 ),
@@ -181,6 +186,7 @@ class _ClientPageState extends State<ClientPage> {
 
   Widget _buildClientListItem(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+    streamDataFilterOptions(selectedFilter);
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
@@ -557,9 +563,7 @@ class _ClientPageState extends State<ClientPage> {
                               const SizedBox(height: 20),
                               Expanded(
                                 child: StreamBuilder(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('Clients')
-                                      .snapshots(),
+                                  stream: streamData,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
@@ -585,9 +589,6 @@ class _ClientPageState extends State<ClientPage> {
                                       return const Text('NO DATA FOUND');
                                     }
 
-                                    List<List<String>> serviceLists = [];
-                                    List<String> dateList = [];
-                                    List<String> timeList = [];
                                     Map<String, dynamic> reminders =
                                         reminder['reminders'];
 
@@ -675,9 +676,7 @@ class _ClientPageState extends State<ClientPage> {
                           children: [
                             Expanded(
                               child: StreamBuilder(
-                                stream: FirebaseFirestore.instance
-                                    .collection('Clients')
-                                    .snapshots(),
+                                stream: streamData,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
