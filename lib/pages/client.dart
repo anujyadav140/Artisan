@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:group_button/group_button.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -155,40 +156,65 @@ class _ClientPageState extends State<ClientPage> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamDataFilterOptions(
       String selectedFilter) {
     switch (selectedFilter) {
-      case '':
-        print("hello world");
-        break;
       case 'Latest visit date to oldest visit':
-        isReminderInFewDays = false;
-        isNoReminderSet = false;
-        streamData = FirebaseFirestore.instance
-            .collection('Clients')
-            .orderBy('visits', descending: true)
-            .snapshots();
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          context.read<AuthService>().searchQuery = '';
+          context.read<AuthService>().searchResult = false;
+          groupButtonController = GroupButtonController(
+            selectedIndex: 0,
+          );
+          isReminderInFewDays = false;
+          isNoReminderSet = false;
+          streamData = FirebaseFirestore.instance
+              .collection('Clients')
+              .orderBy('visits', descending: true)
+              .snapshots();
+        });
         break;
       case 'Oldest visit date to latest visit':
-        isReminderInFewDays = false;
-        isNoReminderSet = false;
-        streamData = FirebaseFirestore.instance
-            .collection('Clients')
-            .orderBy('visits', descending: false)
-            .snapshots();
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          context.read<AuthService>().searchQuery = '';
+          context.read<AuthService>().searchResult = false;
+          groupButtonController = GroupButtonController(
+            selectedIndex: 1,
+          );
+          isReminderInFewDays = false;
+          isNoReminderSet = false;
+          streamData = FirebaseFirestore.instance
+              .collection('Clients')
+              .orderBy('visits', descending: false)
+              .snapshots();
+        });
         break;
       case 'Within 2 days':
-        isReminderInFewDays = true;
-        isNoReminderSet = false;
-        streamData = FirebaseFirestore.instance
-            .collection('Clients')
-            .orderBy('reminders', descending: true)
-            .snapshots();
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          context.read<AuthService>().searchQuery = '';
+          context.read<AuthService>().searchResult = false;
+          groupButtonController = GroupButtonController(
+            selectedIndex: 2,
+          );
+          isReminderInFewDays = true;
+          isNoReminderSet = false;
+          streamData = FirebaseFirestore.instance
+              .collection('Clients')
+              .orderBy('reminders', descending: true)
+              .snapshots();
+        });
         break;
       case 'No reminder set':
-        isReminderInFewDays = false;
-        isNoReminderSet = true;
-        streamData = FirebaseFirestore.instance
-            .collection('Clients')
-            .orderBy('reminders', descending: true)
-            .snapshots();
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          context.read<AuthService>().searchQuery = '';
+          context.read<AuthService>().searchResult = false;
+          groupButtonController = GroupButtonController(
+            selectedIndex: 3,
+          );
+          isReminderInFewDays = false;
+          isNoReminderSet = true;
+          streamData = FirebaseFirestore.instance
+              .collection('Clients')
+              .orderBy('reminders', descending: true)
+              .snapshots();
+        });
         break;
       default:
         break;
@@ -315,23 +341,24 @@ class _ClientPageState extends State<ClientPage> {
     final searchQuery = context.read<AuthService>().searchQuery;
     final searchResult = context.read<AuthService>().searchResult;
     if (searchResult) {
-      Future.delayed(const Duration(milliseconds: 5), () {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         groupButtonController = GroupButtonController(
           selectedIndex: -1,
         );
-        setState(() {
-          streamData = FirebaseFirestore.instance
-              .collection('Clients')
-              .where('phoneNumber', isEqualTo: searchQuery)
-              .snapshots();
+        Future.delayed(const Duration(milliseconds: 1), () {
+          setState(() {
+            streamData = FirebaseFirestore.instance
+                .collection('Clients')
+                .where('phoneNumber', isEqualTo: searchQuery)
+                .snapshots();
+          });
         });
       });
-      context.read<AuthService>().searchQuery = '';
-      context.read<AuthService>().searchResult = false;
     } else {
       streamDataFilterOptions(selectedFilter);
       clientData = filtering(clientData);
     }
+
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     var client = clientData[index].data();
