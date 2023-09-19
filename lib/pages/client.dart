@@ -229,6 +229,7 @@ class _ClientPageState extends State<ClientPage> {
                 GroupButton(
                   isRadio: true,
                   controller: groupButtonController,
+                  enableDeselect: true,
                   onSelected: (value, index, isSelected) {
                     setState(() {
                       selectedFilter = filterOptions[index];
@@ -313,11 +314,11 @@ class _ClientPageState extends State<ClientPage> {
       List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
     final searchQuery = context.read<AuthService>().searchQuery;
     final searchResult = context.read<AuthService>().searchResult;
-    print(searchQuery);
-    print(searchResult);
-    // write program to display a text if clientData is empty
     if (searchResult) {
       Future.delayed(const Duration(milliseconds: 5), () {
+        groupButtonController = GroupButtonController(
+          selectedIndex: -1,
+        );
         setState(() {
           streamData = FirebaseFirestore.instance
               .collection('Clients')
@@ -430,7 +431,7 @@ class _ClientPageState extends State<ClientPage> {
                         amounts); // Show client history dialog
                   },
                   child: Text(
-                    'Client History',
+                    'History',
                     style: TextStyle(
                       fontSize:
                           _ClientPageState().isWeb(context) ? w / 80 : w / 30,
