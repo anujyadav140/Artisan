@@ -91,6 +91,8 @@ class ClientPage extends StatefulWidget {
 }
 
 class _ClientPageState extends State<ClientPage> {
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   bool isWeb(BuildContext context) {
     if (kIsWeb) {
       // Check screen size
@@ -228,6 +230,7 @@ class _ClientPageState extends State<ClientPage> {
     final h = MediaQuery.of(context).size.height;
     final searchResult = context.watch<AuthService>().searchResult;
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         shape: const RoundedRectangleBorder(
@@ -510,7 +513,7 @@ class _ClientPageState extends State<ClientPage> {
                   ),
                   onPressed: () {
                     showDialog(
-                      context: context,
+                      context: scaffoldKey.currentContext!,
                       builder: (context) {
                         return StatefulBuilder(
                           builder: (context, setState) {
@@ -535,9 +538,11 @@ class _ClientPageState extends State<ClientPage> {
                                   children: [
                                     ElevatedButton.icon(
                                       onPressed: () async {
-                                        Navigator.of(context).pop();
+                                        Navigator.of(
+                                                scaffoldKey.currentContext!)
+                                            .pop();
                                         showDialog(
-                                          context: context,
+                                          context: scaffoldKey.currentContext!,
                                           builder: (context) {
                                             DateTime selectedDate = DateTime
                                                 .now(); // Initialize with the current date and time
@@ -699,7 +704,8 @@ class _ClientPageState extends State<ClientPage> {
                                                                     selectedTime,
                                                                     selectedServices);
                                                                 Navigator.of(
-                                                                        context)
+                                                                        scaffoldKey
+                                                                            .currentContext!)
                                                                     .pop(); // Close this dialog
                                                               },
                                                               child: Text(
@@ -719,7 +725,8 @@ class _ClientPageState extends State<ClientPage> {
                                                             ElevatedButton(
                                                               onPressed: () {
                                                                 Navigator.of(
-                                                                        context)
+                                                                        scaffoldKey
+                                                                            .currentContext!)
                                                                     .pop(); // Close this dialog
                                                               },
                                                               child: Text(
@@ -867,7 +874,7 @@ class _ClientPageState extends State<ClientPage> {
                   child: IconButton(
                     onPressed: () {
                       showDialog(
-                        context: context,
+                        context: scaffoldKey.currentContext!,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: Text(
@@ -973,7 +980,8 @@ class _ClientPageState extends State<ClientPage> {
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(scaffoldKey.currentContext!)
+                                      .pop();
                                 },
                                 child: Text(
                                   'Close',
@@ -1019,7 +1027,7 @@ class _ClientPageState extends State<ClientPage> {
   void _showClientHistoryDialog(String name, List<String> visitDates,
       List<List<String>> servicesList, List<String> amounts) {
     showDialog(
-      context: context,
+      context: scaffoldKey.currentContext!,
       builder: (context) {
         double w = MediaQuery.of(context).size.width;
         return AlertDialog(
@@ -1062,7 +1070,8 @@ class _ClientPageState extends State<ClientPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(scaffoldKey.currentContext!)
+                    .pop(); // Close the dialog
               },
               child: Text(
                 'Close',
@@ -1092,7 +1101,7 @@ class _ClientPageState extends State<ClientPage> {
     }
 
     showDialog(
-      context: context,
+      context: scaffoldKey.currentContext!,
       builder: (context) {
         return AlertDialog(
           title: Text(
@@ -1168,7 +1177,8 @@ class _ClientPageState extends State<ClientPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(scaffoldKey.currentContext!)
+                    .pop(); // Close the dialog
               },
               child: Text(
                 'Close',
@@ -1308,7 +1318,7 @@ class _ClientPageState extends State<ClientPage> {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     await showDialog(
-      context: context,
+      context: scaffoldKey.currentContext!,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateInsideDialog) {
@@ -1386,7 +1396,8 @@ class _ClientPageState extends State<ClientPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(scaffoldKey.currentContext!)
+                        .pop(); // Close the dialog
                   },
                   child: Text(
                     'Cancel',
@@ -1420,7 +1431,8 @@ class _ClientPageState extends State<ClientPage> {
                       ClientService().clientEngagement(phoneNumber, name,
                           visitDate, selectedServiceList, money);
                     }
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(scaffoldKey.currentContext!)
+                        .pop(); // Close the dialog
                   },
                   child: Text(
                     editingIndex == -1 ? 'Add' : 'Save',
