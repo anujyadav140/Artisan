@@ -1,3 +1,4 @@
+import 'package:artisan/pages/billing.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,8 @@ class ClientService extends ChangeNotifier {
     String phoneNumber,
     String name,
     dynamic visitDate,
-    List<String> selectedServices,
-    dynamic money,
+    List<String>? selectedServices,
+    dynamic? money,
   ) async {
     try {
       // Check if the user is authenticated
@@ -157,6 +158,38 @@ class ClientService extends ChangeNotifier {
     } catch (error) {
       print("Error: $error");
       throw error;
+    }
+  }
+
+  Future<ClientData> getClientDataByPhoneNumber(String phoneNumber) async {
+    try {
+      // You should implement the logic to fetch client data from your data source
+      // (e.g., Firestore) using the provided phoneNumber.
+      // This is a simplified example assuming you have a Firestore collection named 'Clients'.
+
+      final DocumentSnapshot clientSnapshot = await FirebaseFirestore.instance
+          .collection('Clients')
+          .doc(phoneNumber)
+          .get();
+
+      if (clientSnapshot.exists) {
+        final Map<String, dynamic> data =
+            clientSnapshot.data() as Map<String, dynamic>;
+        final String name = data['name'];
+        final String phoneNumber = data['phoneNumber'];
+
+        return ClientData(
+          name: name,
+          phoneNumber: phoneNumber,
+        );
+      } else {
+        // Handle the case where the client is not found
+        throw Exception('Client not found');
+      }
+    } catch (error) {
+      // Handle any errors that may occur during the data retrieval process
+      print('Error fetching client data: $error');
+      rethrow;
     }
   }
 }

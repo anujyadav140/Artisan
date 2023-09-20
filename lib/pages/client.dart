@@ -145,7 +145,6 @@ class _ClientPageState extends State<ClientPage> {
     selectedIndex: 0,
   );
   List<String> filterOptions = [
-    'All clients',
     'Latest visit date to oldest visit',
     'Oldest visit date to latest visit',
     'Within 2 days',
@@ -157,7 +156,7 @@ class _ClientPageState extends State<ClientPage> {
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamDataFilterOptions(
       String selectedFilter) {
     switch (selectedFilter) {
-      case 'All clients':
+      case 'Latest visit date to oldest visit':
         SchedulerBinding.instance.addPostFrameCallback((_) {
           context.read<AuthService>().searchQuery = '';
           context.read<AuthService>().searchResult = false;
@@ -172,27 +171,12 @@ class _ClientPageState extends State<ClientPage> {
               .snapshots();
         });
         break;
-      case 'Latest visit date to oldest visit':
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          context.read<AuthService>().searchQuery = '';
-          context.read<AuthService>().searchResult = false;
-          groupButtonController = GroupButtonController(
-            selectedIndex: 1,
-          );
-          isReminderInFewDays = false;
-          isNoReminderSet = false;
-          streamData = FirebaseFirestore.instance
-              .collection('Clients')
-              .orderBy('visits', descending: true)
-              .snapshots();
-        });
-        break;
       case 'Oldest visit date to latest visit':
         SchedulerBinding.instance.addPostFrameCallback((_) {
           context.read<AuthService>().searchQuery = '';
           context.read<AuthService>().searchResult = false;
           groupButtonController = GroupButtonController(
-            selectedIndex: 2,
+            selectedIndex: 1,
           );
           isReminderInFewDays = false;
           isNoReminderSet = false;
@@ -207,7 +191,7 @@ class _ClientPageState extends State<ClientPage> {
           context.read<AuthService>().searchQuery = '';
           context.read<AuthService>().searchResult = false;
           groupButtonController = GroupButtonController(
-            selectedIndex: 3,
+            selectedIndex: 2,
           );
           isReminderInFewDays = true;
           isNoReminderSet = false;
@@ -222,7 +206,7 @@ class _ClientPageState extends State<ClientPage> {
           context.read<AuthService>().searchQuery = '';
           context.read<AuthService>().searchResult = false;
           groupButtonController = GroupButtonController(
-            selectedIndex: 4,
+            selectedIndex: 3,
           );
           isReminderInFewDays = false;
           isNoReminderSet = true;
@@ -246,6 +230,11 @@ class _ClientPageState extends State<ClientPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(15), // Rounded bottom edges
+          ),
+        ),
         actions: [
           IconButton(
             onPressed: () {

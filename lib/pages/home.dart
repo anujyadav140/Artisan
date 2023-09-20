@@ -1,3 +1,4 @@
+import 'package:artisan/pages/billing.dart';
 import 'package:artisan/pages/client.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -13,14 +14,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-launchWhatsAppUri() async {
-  const link = WhatsAppUnilink(
-    phoneNumber: '+91-9892919001',
-    text: "TEST 123 AAAA",
-  );
-  await launchUrl(link.asUri());
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   //logout user
   void logout() {
@@ -33,8 +26,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(15), // Rounded bottom edges
+          ),
+        ),
         actions: [
           IconButton(
               onPressed: () {
@@ -75,32 +73,34 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          // GestureDetector(
-          //   onTap: () {
-          //     // Navigate to the client page here
-          //   },
-          //   child: Container(
-          //     padding: const EdgeInsets.all(16.0),
-          //     decoration: const BoxDecoration(
-          //       border: Border(
-          //         bottom: BorderSide(color: Colors.grey),
-          //       ),
-          //     ),
-          //     child: const Row(
-          //       children: [
-          //         CircleAvatar(
-          //           radius: 30.0,
-          //           backgroundImage: AssetImage('your_avatar_image.png'),
-          //         ),
-          //         SizedBox(width: 16.0),
-          //         Text(
-          //           'Product Stock \n - current product stock is 100',
-          //           style: TextStyle(fontSize: 24.0),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => Billing(),
+              ));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30.0,
+                    backgroundImage: AssetImage('your_avatar_image.png'),
+                  ),
+                  SizedBox(width: 16.0),
+                  Text(
+                    'Billing',
+                    style: TextStyle(fontSize: 24.0),
+                  ),
+                ],
+              ),
+            ),
+          ),
           // GestureDetector(
           //   onTap: () {
           //     // Navigate to the client page here
