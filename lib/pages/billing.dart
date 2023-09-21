@@ -1,3 +1,4 @@
+import 'package:artisan/pages/bill_generation.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:artisan/services/client_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,11 +8,16 @@ import 'package:provider/provider.dart';
 
 class MySearchDelegate extends SearchDelegate {
   final Function(String) onSuggestionClicked; // Callback function
+  final VoidCallback clearClientData; // Callback function to clear _clientData
 
-  MySearchDelegate({required this.onSuggestionClicked});
+  MySearchDelegate(
+      {required this.onSuggestionClicked, required this.clearClientData});
   @override
   Widget? buildLeading(BuildContext context) => IconButton(
       onPressed: () {
+        clearClientData(); // Call the callback to clear _clientData
+        Provider.of<AuthService>(context, listen: false).searchResult = false;
+        Provider.of<AuthService>(context, listen: false).searchQuery = "";
         close(context, null);
       },
       icon: Icon(Icons.arrow_back));
@@ -103,6 +109,8 @@ class _BillingState extends State<Billing> {
   ClientData? _clientData; // Create a variable to store client data
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneNumberController = TextEditingController();
+  String name = "";
+  String phoneNumber = "";
   bool isWeb(BuildContext context) {
     if (kIsWeb) {
       // Check screen size
@@ -114,6 +122,62 @@ class _BillingState extends State<Billing> {
     } else {
       return false;
     }
+  }
+
+  List<String> selectedItems = []; // List to store selected checkbox items
+  List<String> allItems = []; // List to store all available items
+  List<String> filteredItems = [];
+  // Define a map to store service prices
+  Map<String, double> servicePrices = {
+    'Haircut': 10.0, // Replace with actual prices for your services
+    'Hair Color': 20.0,
+    'Manicure': 15.0,
+    'Pedicure': 25.0,
+    'Facial': 30.0,
+    'Massage': 20.0,
+  };
+
+  double discountPercentage = 0.0;
+  TextEditingController discountController = TextEditingController();
+
+  // Function to calculate the total
+  double calculateTotal() {
+    double total = 0.0;
+
+    // Calculate the total of selected services
+    for (final item in selectedItems) {
+      if (servicePrices.containsKey(item)) {
+        total += servicePrices[item]!;
+      }
+    }
+
+    // Apply the discount
+    total = total - discountPercentage;
+
+    return total;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the list of allItems (e.g., load data from a source)
+    allItems = [
+      'Haircut',
+      'Hair Color',
+      'Manicure',
+      'Pedicure',
+      'Facial',
+      'Massage',
+    ];
+    filteredItems = allItems; // List to store filtered items
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the discountController when the widget is disposed
+    discountController.dispose();
+    super.dispose();
   }
 
   void _onSearchQueryChanged(bool result, String query) async {
@@ -153,19 +217,40 @@ class _BillingState extends State<Billing> {
           onPressed: () {
             context.read<AuthService>().searchResult = false;
             context.read<AuthService>().searchQuery = "";
-            Navigator.pop(context);
+            Navigator.pop(scaffoldKey.currentContext!);
           },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
+              name = '';
+              phoneNumber = '';
               showSearch(
                 context: context,
                 delegate: MySearchDelegate(
-                  onSuggestionClicked: (selectedSuggestion) {
-                    _onSearchQueryChanged(true,
-                        selectedSuggestion); // Call the method with the selected suggestion
+                  onSuggestionClicked: (selectedSuggestion) async {
+                    phoneNumber = selectedSuggestion;
+                    final querySnapshot = await FirebaseFirestore.instance
+                        .collection('Clients')
+                        .where('phoneNumber', isEqualTo: selectedSuggestion)
+                        .get();
+                    if (querySnapshot.docs.isNotEmpty) {
+                      name = querySnapshot.docs.first['name'];
+                      setState(() {
+                        _clientData = ClientData(
+                            name: name, phoneNumber: selectedSuggestion);
+                      });
+                      _onSearchQueryChanged(true, selectedSuggestion);
+                    } else {
+                      print(
+                          'No matching document found for phone number: $selectedSuggestion');
+                    }
+                  },
+                  clearClientData: () {
+                    setState(() {
+                      _clientData = null; // Clear _clientData
+                    });
                   },
                 ),
               );
@@ -178,34 +263,133 @@ class _BillingState extends State<Billing> {
           ),
         ),
       ),
-      body: _clientData != null
-          ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Client Name: ${_clientData!.name}',
-                        style: TextStyle(
-                            fontSize: isWeb(context) ? w / 80 : w / 20),
+      body: context.watch<AuthService>().searchResult || name.isNotEmpty
+          ? SingleChildScrollView(
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.watch<AuthService>().searchResult
+                                ? 'Client Name: ${_clientData!.name}'
+                                : 'Client Name: $name',
+                            style: TextStyle(
+                                fontSize: isWeb(context) ? w / 80 : w / 20),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            context.watch<AuthService>().searchResult
+                                ? 'Phone Number: ${_clientData!.phoneNumber}'
+                                : 'Phone Number: $phoneNumber',
+                            style: TextStyle(
+                                fontSize: isWeb(context) ? w / 80 : w / 20),
+                          ),
+                          // Display other client information as needed
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Phone Number: ${_clientData!.phoneNumber}',
-                        style: TextStyle(
-                            fontSize: isWeb(context) ? w / 80 : w / 20),
-                      ),
-                      // Display other client information as needed
-                    ],
+                    ),
                   ),
-                ),
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Select Services',
+                            style: TextStyle(
+                                fontSize: isWeb(context) ? w / 80 : w / 20),
+                          ),
+                          TextField(
+                            onChanged: (query) {
+                              setState(() {
+                                // Filter the available items based on the query
+                                filteredItems = allItems.where((item) {
+                                  return item
+                                      .toLowerCase()
+                                      .contains(query.toLowerCase());
+                                }).toList();
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'Search Services',
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+                          // Display the list of available items
+                          for (final item in filteredItems)
+                            CheckboxListTile(
+                              title: Text(item),
+                              value: selectedItems.contains(item),
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == true) {
+                                    selectedItems.add(item);
+                                  } else {
+                                    selectedItems.remove(item);
+                                  }
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: Row(
+                      children: [
+                        //discount given with a percentage icon
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              controller: discountController,
+                              keyboardType: TextInputType
+                                  .number, // Allow only numeric input
+                              onChanged: (value) {
+                                setState(() {
+                                  // Update the discountPercentage when the TextField changes
+                                  discountPercentage =
+                                      double.tryParse(value) ?? 0.0;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Discount Percentage',
+                                labelStyle: TextStyle(
+                                  fontSize: isWeb(context) ? w / 80 : w / 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(Icons.percent),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Display the total
+                  Text(
+                    'Total: \$${calculateTotal().toStringAsFixed(2)}', // Format to 2 decimal places
+                    style: TextStyle(
+                      fontSize: isWeb(context) ? w / 80 : w / 20,
+                    ),
+                  ),
+                ],
               ),
             )
           : const Center(
@@ -214,15 +398,52 @@ class _BillingState extends State<Billing> {
                 style: TextStyle(fontSize: 24),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          nameController.clear();
-          phoneNumberController.clear();
+      floatingActionButton:
+          !context.watch<AuthService>().searchResult && name.isEmpty
+              ? FloatingActionButton(
+                  onPressed: () {
+                    nameController.clear();
+                    phoneNumberController.clear();
+                    _showAddClientDialog();
+                  },
+                  child: const Icon(Icons.add),
+                )
+              : FloatingActionButton(
+                  onPressed: () {
+                    final visitDate = DateTime.now();
+                    final selectedServicesMap = <String, double>{};
 
-          _showAddClientDialog();
-        },
-        child: const Icon(Icons.add),
-      ),
+                    // Populate the selected services map with their prices
+                    for (final serviceName in selectedItems) {
+                      if (servicePrices.containsKey(serviceName)) {
+                        selectedServicesMap[serviceName] =
+                            servicePrices[serviceName]!;
+                      }
+                    }
+                    print("_________________________");
+                    print(phoneNumber);
+                    print(name);
+                    print(visitDate);
+                    print(selectedItems);
+                    print(calculateTotal().toStringAsFixed(2));
+                    print("_________________________");
+                    ClientService().clientEngagement(
+                      phoneNumber,
+                      name,
+                      visitDate,
+                      selectedItems,
+                      calculateTotal().toStringAsFixed(2),
+                    );
+
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => BillingGeneration(
+                        discount: discountPercentage,
+                        servicePrices: selectedServicesMap,
+                      ),
+                    ));
+                  },
+                  child: const Icon(Icons.arrow_forward),
+                ),
     );
   }
 
@@ -272,8 +493,7 @@ class _BillingState extends State<Billing> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(scaffoldKey.currentContext!)
-                        .pop(); // Close the dialog
+                    Navigator.pop(scaffoldKey.currentContext!);
                   },
                   child: Text(
                     'Cancel',
@@ -285,16 +505,11 @@ class _BillingState extends State<Billing> {
                 TextButton(
                   onPressed: () {
                     // Create a new client
-                    final name = nameController.text;
-                    final phoneNumber = phoneNumberController.text;
-
-                    // Add a new client
-                    final visitDate = DateTime.now().toString();
-                    ClientService()
-                        .clientEngagement(phoneNumber, name, visitDate, [], "");
-
-                    Navigator.of(scaffoldKey.currentContext!)
-                        .pop(); // Close the dialog
+                    setState(() {
+                      name = nameController.text;
+                      phoneNumber = phoneNumberController.text;
+                    });
+                    Navigator.pop(scaffoldKey.currentContext!);
                   },
                   child: Text(
                     'Add',
