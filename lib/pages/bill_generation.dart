@@ -161,8 +161,6 @@ class _BillingGenerationState extends State<BillingGeneration> {
           controller: screenshotController,
           child: Container(
             width: isWeb(context) ? w / 3 : w / 1,
-            // Reduce the height here to make it shorter
-            height: isWeb(context) ? h / 1 : h / 1,
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -211,33 +209,34 @@ class _BillingGenerationState extends State<BillingGeneration> {
                   // DataTable widget for services and costs
                   SizedBox(
                     width: isWeb(context) ? w / 3 : w / 1,
-                    // Reduce the height here to make it shorter
-                    height: isWeb(context) ? h / 2 : h / 1,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(
-                            label: Text(
-                          'Service',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )),
-                        DataColumn(
-                            label: Text(
-                          'Price',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )),
-                      ],
-                      rows: widget.servicePrices.entries
-                          .map((entry) => DataRow(
-                                cells: [
-                                  DataCell(Text(entry.key)),
-                                  DataCell(Text(entry.value.toString())),
-                                ],
-                              ))
-                          .toList(),
+                    height: h * 0.5,
+                    child: Expanded(
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(
+                              label: Text(
+                            'Service',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                          DataColumn(
+                              label: Text(
+                            'Price',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                        ],
+                        rows: widget.servicePrices.entries
+                            .map((entry) => DataRow(
+                                  cells: [
+                                    DataCell(Text(entry.key)),
+                                    DataCell(Text(entry.value.toString())),
+                                  ],
+                                ))
+                            .toList(),
+                      ),
                     ),
                   ),
                   SizedBox(
