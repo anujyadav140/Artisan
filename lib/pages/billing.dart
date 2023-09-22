@@ -439,6 +439,8 @@ class _BillingState extends State<Billing> {
                       builder: (context) => BillingGeneration(
                         discount: discountPercentage,
                         servicePrices: selectedServicesMap,
+                        phoneNumber: phoneNumber,
+                        name: name,
                       ),
                     ));
                   },
