@@ -62,10 +62,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {}
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Artisan',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

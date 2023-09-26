@@ -1,10 +1,14 @@
+import 'package:artisan/attendance/loginscreen.dart';
+import 'package:artisan/main.dart';
 import 'package:artisan/pages/billing.dart';
 import 'package:artisan/pages/client.dart';
+import 'package:artisan/services/authentication/auth_gate.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

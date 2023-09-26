@@ -115,8 +115,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         firstDate: DateTime(1950),
                         lastDate: DateTime.now(),
                       ).then((value) {
+                        String formattedDate =
+                            DateFormat("dd/MM/yyyy").format(value!);
+
                         setState(() {
-                          birth = DateFormat("MM/dd/yyyy").format(value!);
+                          birth = formattedDate;
                         });
                       });
                     },

@@ -1,8 +1,12 @@
 import 'package:artisan/attendance/homescreen.dart';
 import 'package:artisan/attendance/registerscreen.dart';
+import 'package:artisan/pages/home.dart';
+import 'package:artisan/services/authentication/auth_gate.dart';
+import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -88,6 +92,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       String id = idController.text.trim();
                       String password = passController.text.trim();
 
+                      //get the auth service
+                      final authService =
+                          Provider.of<AuthService>(context, listen: false);
+                      try {
+                        await authService.loginWithEmailAndPassword(
+                            id, password);
+                        // ignore: use_build_context_synchronously
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AuthGate()),
+                        );
+                      } catch (e) {
+                        // ignore: use_build_context_synchronously
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Trying to sign you in...")));
+                      }
+
                       if (id.isEmpty) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
@@ -131,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (e.toString() ==
                               "RangeError (index): Invalid value: Valid value range is empty: 0") {
                             setState(() {
-                              error = "Employee id does not exist!";
+                              error = "Trying to sign you in...";
                             });
                           } else {
                             setState(() {
