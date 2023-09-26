@@ -110,38 +110,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? GestureDetector(
                     onTap: () {
                       showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(1950),
-                          lastDate: DateTime.now(),
-                          builder: (context, child) {
-                            return Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: ColorScheme.light(
-                                  primary: primary,
-                                  secondary: primary,
-                                  onSecondary: Colors.white,
-                                ),
-                                textButtonTheme: TextButtonThemeData(
-                                  style: TextButton.styleFrom(
-                                    primary: primary,
-                                  ),
-                                ),
-                                textTheme: const TextTheme(
-                                  headline4: TextStyle(
-                                    fontFamily: "NexaBold",
-                                  ),
-                                  overline: TextStyle(
-                                    fontFamily: "NexaBold",
-                                  ),
-                                  button: TextStyle(
-                                    fontFamily: "NexaBold",
-                                  ),
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          }).then((value) {
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1950),
+                        lastDate: DateTime.now(),
+                      ).then((value) {
                         setState(() {
                           birth = DateFormat("MM/dd/yyyy").format(value!);
                         });

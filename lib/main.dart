@@ -36,18 +36,25 @@ import 'package:artisan/attendance/homescreen.dart';
 import 'package:artisan/attendance/loginscreen.dart';
 import 'package:artisan/attendance/model/user.dart';
 import 'package:artisan/firebase_options.dart';
-
+import 'package:artisan/services/authentication/auth_gate.dart';
+import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:month_year_picker/month_year_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(const MyApp());
+  // runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => AuthService(),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -55,6 +62,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {}
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
@@ -62,8 +70,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const KeyboardVisibilityProvider(
-        child: AuthCheck(),
-      ), 
+        child: kIsWeb ? AuthGate() : AuthCheck(),
+      ),
       localizationsDelegates: const [
         MonthYearPickerLocalizations.delegate,
       ],

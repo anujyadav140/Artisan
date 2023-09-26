@@ -42,9 +42,6 @@ class _TodayScreenState extends State<TodayScreen> {
         .get();
     setState(() {
       officeCode = snap['code'];
-      print("------------------");
-      print(officeCode);
-      print("------------------");
     });
   }
 

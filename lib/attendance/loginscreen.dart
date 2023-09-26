@@ -9,6 +9,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -32,182 +33,189 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          isKeyboardVisible
-              ? SizedBox(
-                  height: screenHeight / 16,
-                )
-              : Container(
-                  height: screenHeight / 2.5,
-                  width: screenWidth,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: const BorderRadius.only(
-                      bottomRight: Radius.circular(70),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            isKeyboardVisible
+                ? SizedBox(
+                    height: screenHeight / 16,
+                  )
+                : Container(
+                    height: screenHeight / 2.5,
+                    width: screenWidth,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: const BorderRadius.only(
+                        bottomRight: Radius.circular(70),
+                      ),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: screenWidth / 5,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: screenWidth / 5,
-                    ),
-                  ),
+            Container(
+              margin: EdgeInsets.only(
+                top: screenHeight / 15,
+                bottom: screenHeight / 20,
+              ),
+              child: Text(
+                "Login",
+                style: TextStyle(
+                  fontSize: screenWidth / 18,
+                  fontFamily: "NexaBold",
                 ),
-          Container(
-            margin: EdgeInsets.only(
-              top: screenHeight / 15,
-              bottom: screenHeight / 20,
-            ),
-            child: Text(
-              "Login",
-              style: TextStyle(
-                fontSize: screenWidth / 18,
-                fontFamily: "NexaBold",
               ),
             ),
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            margin: EdgeInsets.symmetric(
-              horizontal: screenWidth / 12,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                fieldTitle("Employee ID"),
-                customField("Enter your employee id", idController, false),
-                fieldTitle("Password"),
-                customField("Enter your password", passController, true),
-                GestureDetector(
-                  onTap: () async {
-                    FocusScope.of(context).unfocus();
-                    String id = idController.text.trim();
-                    String password = passController.text.trim();
+            Container(
+              alignment: Alignment.centerLeft,
+              margin: EdgeInsets.symmetric(
+                horizontal: screenWidth / 12,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  fieldTitle("Employee ID"),
+                  customField("Enter your employee id", idController, false),
+                  fieldTitle("Password"),
+                  customField("Enter your password", passController, true),
+                  GestureDetector(
+                    onTap: () async {
+                      FocusScope.of(context).unfocus();
+                      String id = idController.text.trim();
+                      String password = passController.text.trim();
 
-                    if (id.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text("Employee id is still empty!"),
-                      ));
-                    } else if (password.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text("Password is still empty!"),
-                      ));
-                    } else {
-                      QuerySnapshot snap = await FirebaseFirestore.instance
-                          .collection("Employee")
-                          .where('id', isEqualTo: id)
-                          .get();
-
-                      try {
-                        if (password == snap.docs[0]['password']) {
-                          sharedPreferences =
-                              await SharedPreferences.getInstance();
-
-                          sharedPreferences
-                              .setString('employeeId', id)
-                              .then((_) {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomeScreen()));
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            content: Text("Password is not correct!"),
-                          ));
-                        }
-                      } catch (e) {
-                        String error = " ";
-
-                        if (e.toString() ==
-                            "RangeError (index): Invalid value: Valid value range is empty: 0") {
-                          setState(() {
-                            error = "Employee id does not exist!";
-                          });
-                        } else {
-                          setState(() {
-                            error = "Error occurred!";
-                          });
-                        }
-
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(error),
+                      if (id.isEmpty) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text("Employee id is still empty!"),
                         ));
-                      }
-                    }
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 60,
-                        width: screenWidth,
-                        margin: EdgeInsets.only(top: screenHeight / 40),
-                        decoration: BoxDecoration(
-                          color: primary,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(30)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "LOGIN",
-                            style: TextStyle(
-                              fontFamily: "NexaBold",
-                              fontSize: screenWidth / 26,
-                              color: Colors.white,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const RegisterScreen(),
+                      } else if (password.isEmpty) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text("Password is still empty!"),
+                        ));
+                      } else {
+                        QuerySnapshot snap = await FirebaseFirestore.instance
+                            .collection("Employee")
+                            .where('id', isEqualTo: id)
+                            .get();
+
+                        try {
+                          if (password == snap.docs[0]['password']) {
+                            sharedPreferences =
+                                await SharedPreferences.getInstance();
+
+                            sharedPreferences
+                                .setString('employeeId', id)
+                                .then((_) {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const HomeScreen()));
+                            });
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text("Password is not correct!"),
+                            ));
+                          }
+                        } catch (e) {
+                          String error = " ";
+
+                          if (e.toString() ==
+                              "RangeError (index): Invalid value: Valid value range is empty: 0") {
+                            setState(() {
+                              error = "Employee id does not exist!";
+                            });
+                          } else {
+                            setState(() {
+                              error = "Error occurred!";
+                            });
+                          }
+
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(error),
                           ));
-                        },
-                        child: Container(
-                          height: 30,
+                        }
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 60,
                           width: screenWidth,
                           margin: EdgeInsets.only(top: screenHeight / 40),
+                          decoration: BoxDecoration(
+                            color: primary,
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(30)),
+                          ),
                           child: Center(
-                            child: RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: "Don't have an account? ",
-                                    style: TextStyle(
-                                      fontFamily: "NexaBold",
-                                      fontSize: screenWidth / 25,
-                                      color: Colors.black,
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: "Register",
-                                    style: TextStyle(
-                                      fontFamily: "NexaBold",
-                                      fontSize: screenWidth / 20,
-                                      color: Colors
-                                          .blueAccent, // Set the color to blue
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
-                                ],
+                            child: Text(
+                              "LOGIN",
+                              style: TextStyle(
+                                fontFamily: "NexaBold",
+                                fontSize: screenWidth / 26,
+                                color: Colors.white,
+                                letterSpacing: 2,
                               ),
                             ),
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                )
-              ],
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const RegisterScreen(),
+                            ));
+                          },
+                          child: Container(
+                            height: 30,
+                            width: screenWidth,
+                            margin: EdgeInsets.only(top: screenHeight / 40),
+                            child: Center(
+                              child: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: "Don't have an account? ",
+                                      style: TextStyle(
+                                        fontFamily: "NexaBold",
+                                        fontSize: screenWidth / 25,
+                                        color: Colors.black,
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "Register",
+                                      style: TextStyle(
+                                        fontFamily: "NexaBold",
+                                        fontSize: screenWidth / 20,
+                                        color: Colors
+                                            .blueAccent, // Set the color to blue
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -243,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: screenWidth / 6,
             child: Icon(
               Icons.person,
