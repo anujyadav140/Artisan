@@ -1,7 +1,7 @@
 import 'package:artisan/attendance/homescreen.dart';
 import 'package:artisan/attendance/registerscreen.dart';
 import 'package:artisan/pages/home.dart';
-import 'package:artisan/services/authentication/auth_gate.dart';
+import 'package:artisan/services/authentication/auth_gate_mobile.dart';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const AuthGate()),
+                              builder: (context) => const AuthGateMobile()),
                         );
                       } catch (e) {
                         // ignore: use_build_context_synchronously
