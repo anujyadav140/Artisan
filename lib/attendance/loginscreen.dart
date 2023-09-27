@@ -98,12 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       try {
                         await authService.loginWithEmailAndPassword(
                             id, password);
-                        // ignore: use_build_context_synchronously
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AuthGateMobile()),
-                        );
                       } catch (e) {
                         // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
