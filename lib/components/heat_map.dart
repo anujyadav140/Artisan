@@ -6,25 +6,21 @@ class MyHeatMapCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HeatMap(
+    return HeatMapCalendar(
+      defaultColor: Colors.white,
+      showColorTip: false,
+      flexible: true,
+      colorMode: ColorMode.color,
+      textColor: Colors.black,
       datasets: {
-        DateTime(2021, 1, 6): 3,
-        DateTime(2021, 1, 7): 7,
-        DateTime(2021, 1, 8): 10,
-        DateTime(2021, 1, 9): 13,
-        DateTime(2021, 1, 13): 6,
+        DateTime(2023, 9, 21): 10,
+        DateTime(2023, 9, 22): 10,
+        DateTime(2023, 9, 23): 10,
+        DateTime(2023, 9, 24): 10,
+        DateTime(2023, 9, 25): 10,
       },
-      colorMode: ColorMode.opacity,
-      showText: false,
-      scrollable: true,
-      colorsets: {
-        1: Colors.red,
-        3: Colors.orange,
-        5: Colors.yellow,
-        7: Colors.green,
-        9: Colors.blue,
-        11: Colors.indigo,
-        13: Colors.purple,
+      colorsets: const {
+        1: Colors.blue,
       },
       onClick: (value) {
         ScaffoldMessenger.of(context)

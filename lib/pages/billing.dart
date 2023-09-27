@@ -210,7 +210,7 @@ class _BillingState extends State<Billing> {
         title: _clientData != null
             ? Text('Billing for Client ${_clientData!.name}')
             : const Text('Choose a client through search'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           icon: const Icon(
               Icons.arrow_back), // You can change this icon as needed

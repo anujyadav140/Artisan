@@ -1,69 +1,133 @@
-//!ExpansionPanelList
-
+import 'package:artisan/components/employee_details.dart';
+import 'package:artisan/components/heat_map.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class Item {
-  Item({
-    required this.headerText,
-    required this.expandedText,
-    this.isExpanded = false,
-  });
-  String headerText;
-  String expandedText;
-  bool isExpanded;
+class Employee {
+  final String id;
+  final String firstName;
+  final String lastName;
+
+  Employee(
+    this.id,
+    this.firstName,
+    this.lastName,
+  );
 }
 
 class Attendance extends StatefulWidget {
-  const Attendance({Key? key}) : super(key: key);
+  const Attendance({super.key});
 
   @override
   State<Attendance> createState() => _AttendanceState();
 }
 
 class _AttendanceState extends State<Attendance> {
-  final List<Item> _data = List<Item>.generate(
-    10,
-    (int index) {
-      return Item(
-        headerText: 'Item $index',
-        expandedText: 'This is item number $index',
-      );
-    },
-  );
+  List<Employee> employees = [];
+
+  Employee? selectedEmployee;
+
+  Future<List<Map<String, dynamic>>> fetchEmployeeData() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('Employee').get();
+
+    return querySnapshot.docs.map((doc) {
+      return {
+        'id': doc.id, // This will contain the auto-generated document ID
+        'firstName': doc['firstName'], // This will contain the first name
+        'lastName': doc['lastName'], // This will contain the last name
+      };
+    }).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEmployeeData().then((value) {
+      setState(() {
+        employees = value
+            .map((e) => Employee(e['id'], e['firstName'], e['lastName']))
+            .toList();
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: ExpansionPanelList(
-        expansionCallback: (int index, bool isExpanded) {
-          setState(() {
-            _data[index].isExpanded = !isExpanded;
-          });
-        },
-        children: _data.map<ExpansionPanel>((Item item) {
-          return ExpansionPanel(
-            headerBuilder: (BuildContext context, bool isExpanded) {
-              return ListTile(
-                title: Text(item.headerText),
-              );
-            },
-            body: ListTile(
-                title: Text(item.expandedText),
-                subtitle: const Text('To delete this item, click trash icon'),
-                trailing: const Icon(
-                  Icons.delete,
-                  color: Colors.orangeAccent,
-                ),
-                onTap: () {
-                  setState(() {
-                    _data
-                        .removeWhere((Item currentItem) => item == currentItem);
-                  });
-                }),
-            isExpanded: item.isExpanded,
-          );
-        }).toList(),
+    String profilePic = '';
+    String birthDate = '';
+    String address = '';
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(selectedEmployee == null
+            ? 'Employee Attendance List'
+            : 'Heatmap for ${selectedEmployee!.firstName}'),
+        leading: selectedEmployee == null
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => const Attendance(),
+                  ));
+                },
+              ),
       ),
+      body: selectedEmployee == null
+          ? ListView.builder(
+              itemCount: employees.length,
+              itemBuilder: (context, index) {
+                final employee = employees[index];
+                return Card(
+                  child: ListTile(
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.info,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () async {
+                        DocumentSnapshot doc = await FirebaseFirestore.instance
+                            .collection("Employee")
+                            .doc(employee.id)
+                            .get();
+                        setState(() {
+                          profilePic = doc['profilePic'];
+                          birthDate = doc['birthDate'];
+                          address = doc['address'];
+                        });
+                        print(profilePic);
+                        // ignore: use_build_context_synchronously
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return EmployeeDetailsDialog(
+                              firstName: employee.firstName,
+                              lastName: employee.lastName,
+                              address: address,
+                              profilePic: profilePic,
+                              birthDate: birthDate,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.arrow_forward_ios,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedEmployee = employee;
+                        });
+                      },
+                    ),
+                    title: Text('${employee.firstName} ${employee.lastName}'),
+                  ),
+                );
+              },
+            )
+          : const MyHeatMapCalendar(),
     );
   }
 }

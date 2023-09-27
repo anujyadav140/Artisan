@@ -121,7 +121,7 @@ class _BillingGenerationState extends State<BillingGeneration> {
       key: scaffoldKey,
       appBar: AppBar(
         title: const Text("Billing Generation"),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
