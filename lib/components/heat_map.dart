@@ -60,7 +60,13 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendance Calender For ${widget.name}'),
+        title: Text(
+          'Attendance Calender-${widget.name}',
+          style: TextStyle(
+            fontFamily: "NexaBold",
+            fontSize: kIsWeb ? 25 : screenWidth / 30,
+          ),
+        ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(15), // Rounded bottom edges
@@ -75,8 +81,8 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
               child: SizedBox(
                 width: kIsWeb
                     ? MediaQuery.of(context).size.width < 960
-                        ? MediaQuery.of(context).size.width * 0.65
-                        : MediaQuery.of(context).size.width * 0.35
+                        ? MediaQuery.of(context).size.width * 0.80
+                        : MediaQuery.of(context).size.width * 0.40
                     : null,
                 child: HeatMapCalendar(
                   defaultColor: Colors.white,
@@ -116,11 +122,11 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                   ? MediaQuery.of(context).size.width < 960
                       ? MediaQuery.of(context).size.width * 0.90
                       : MediaQuery.of(context).size.width * 0.60
-                  : MediaQuery.of(context).size.width * 0.75,
+                  : null,
               child: Column(
                 children: [
                   Container(
-                    margin: EdgeInsets.only(top: 20, left: 12, right: 12),
+                    margin: const EdgeInsets.only(top: 20, left: 12, right: 12),
                     height: 125,
                     decoration: const BoxDecoration(
                       color: Colors.white,
@@ -139,10 +145,10 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                       children: [
                         Expanded(
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Colors.blue,
                               borderRadius:
-                                  const BorderRadius.all(Radius.circular(20)),
+                                  BorderRadius.all(Radius.circular(20)),
                             ),
                             child: Center(
                               child: Text(
@@ -205,7 +211,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 20, left: 12, right: 12),
+                    margin: const EdgeInsets.only(top: 20, left: 12, right: 12),
                     height: 125,
                     decoration: const BoxDecoration(
                       color: Colors.white,
@@ -224,10 +230,9 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 10.0),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.blue,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(20)),
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
                           ),
                           child: Center(
                             child: Padding(
@@ -237,7 +242,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                                 "Check In\nLocation",
                                 style: TextStyle(
                                   fontFamily: "NexaBold",
-                                  fontSize: kIsWeb ? 20 : screenWidth / 20,
+                                  fontSize: kIsWeb ? 20 : screenWidth / 22,
                                   color: Colors.white,
                                 ),
                               ),
@@ -249,7 +254,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                             checkInLocation == "" ? "None" : checkInLocation,
                             style: TextStyle(
                               fontFamily: "NexaBold",
-                              fontSize: kIsWeb ? 18 : screenWidth / 18,
+                              fontSize: kIsWeb ? 18 : screenWidth / 30,
                             ),
                           ),
                         ),
@@ -257,7 +262,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                         top: 20, left: 12, right: 12, bottom: 20),
                     height: 125,
                     decoration: const BoxDecoration(
@@ -277,10 +282,9 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 10.0),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.blue,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(20)),
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
                           ),
                           child: Center(
                             child: Padding(
@@ -290,7 +294,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                                 "Check Out\nLocation",
                                 style: TextStyle(
                                   fontFamily: "NexaBold",
-                                  fontSize: kIsWeb ? 20 : screenWidth / 20,
+                                  fontSize: kIsWeb ? 20 : screenWidth / 22,
                                   color: Colors.white,
                                 ),
                               ),
@@ -302,7 +306,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                             checkOutLocation == "" ? "None" : checkOutLocation,
                             style: TextStyle(
                               fontFamily: "NexaBold",
-                              fontSize: kIsWeb ? 18 : screenWidth / 18,
+                              fontSize: kIsWeb ? 18 : screenWidth / 30,
                             ),
                           ),
                         ),
