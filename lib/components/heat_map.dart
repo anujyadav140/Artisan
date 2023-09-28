@@ -60,7 +60,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Attendance Calender For '),
+        title: Text('Attendance Calender For ${widget.name}'),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(15), // Rounded bottom edges

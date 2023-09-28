@@ -62,19 +62,12 @@ class _AttendanceState extends State<Attendance> {
     String address = '';
     return Scaffold(
       appBar: AppBar(
-        title: Text(selectedEmployee == null
-            ? 'Employee Attendance List'
-            : 'Attendance History For ${selectedEmployee!.firstName}'),
-        leading: selectedEmployee == null
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (context) => const Attendance(),
-                  ));
-                },
-              ),
+        title: const Text('Employee Attendance List'),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(15), // Rounded bottom edges
+          ),
+        ),
       ),
       body: ListView.builder(
         itemCount: employees.length,
