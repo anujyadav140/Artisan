@@ -189,18 +189,20 @@ class _ClientPageState extends State<ClientPage> {
         });
         break;
       case 'Within 2 days':
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          context.read<AuthService>().searchQuery = '';
-          context.read<AuthService>().searchResult = false;
-          groupButtonController = GroupButtonController(
-            selectedIndex: 2,
-          );
-          isReminderInFewDays = true;
-          isNoReminderSet = false;
-          streamData = FirebaseFirestore.instance
-              .collection('Clients')
-              .orderBy('reminders', descending: true)
-              .snapshots();
+        Future.delayed(const Duration(milliseconds: 1), () {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            context.read<AuthService>().searchQuery = '';
+            context.read<AuthService>().searchResult = false;
+            groupButtonController = GroupButtonController(
+              selectedIndex: 2,
+            );
+            isReminderInFewDays = true;
+            isNoReminderSet = false;
+            streamData = FirebaseFirestore.instance
+                .collection('Clients')
+                .orderBy('reminders', descending: true)
+                .snapshots();
+          });
         });
         break;
       case 'No reminder set':

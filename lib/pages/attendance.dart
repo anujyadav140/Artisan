@@ -23,6 +23,9 @@ class Attendance extends StatefulWidget {
 }
 
 class _AttendanceState extends State<Attendance> {
+  List<int> dayList = [];
+  List<int> monthList = [];
+  List<int> yearList = [];
   List<Employee> employees = [];
 
   Employee? selectedEmployee;
@@ -61,7 +64,7 @@ class _AttendanceState extends State<Attendance> {
       appBar: AppBar(
         title: Text(selectedEmployee == null
             ? 'Employee Attendance List'
-            : 'Heatmap for ${selectedEmployee!.firstName}'),
+            : 'Attendance History For ${selectedEmployee!.firstName}'),
         leading: selectedEmployee == null
             ? null
             : IconButton(
@@ -73,61 +76,118 @@ class _AttendanceState extends State<Attendance> {
                 },
               ),
       ),
-      body: selectedEmployee == null
-          ? ListView.builder(
-              itemCount: employees.length,
-              itemBuilder: (context, index) {
-                final employee = employees[index];
-                return Card(
-                  child: ListTile(
-                    leading: IconButton(
-                      icon: Icon(
-                        Icons.info,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      onPressed: () async {
-                        DocumentSnapshot doc = await FirebaseFirestore.instance
-                            .collection("Employee")
-                            .doc(employee.id)
-                            .get();
-                        setState(() {
-                          profilePic = doc['profilePic'];
-                          birthDate = doc['birthDate'];
-                          address = doc['address'];
-                        });
-                        print(profilePic);
-                        // ignore: use_build_context_synchronously
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return EmployeeDetailsDialog(
-                              firstName: employee.firstName,
-                              lastName: employee.lastName,
-                              address: address,
-                              profilePic: profilePic,
-                              birthDate: birthDate,
-                            );
-                          },
-                        );
-                      },
+      body: ListView.builder(
+        itemCount: employees.length,
+        itemBuilder: (context, index) {
+          final employee = employees[index];
+          return Card(
+            child: ListTile(
+              leading: IconButton(
+                icon: Icon(
+                  Icons.info,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: () async {
+                  DocumentSnapshot doc = await FirebaseFirestore.instance
+                      .collection("Employee")
+                      .doc(employee.id)
+                      .get();
+                  setState(() {
+                    profilePic = doc['profilePic'];
+                    birthDate = doc['birthDate'];
+                    address = doc['address'];
+                  });
+                  // ignore: use_build_context_synchronously
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return EmployeeDetailsDialog(
+                        firstName: employee.firstName,
+                        lastName: employee.lastName,
+                        address: address,
+                        profilePic: profilePic,
+                        birthDate: birthDate,
+                      );
+                    },
+                  );
+                },
+              ),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: () async {
+                  List<int> dayList = [];
+                  List<int> monthList = [];
+                  List<int> yearList = [];
+                  setState(() {
+                    selectedEmployee = employee;
+                  });
+                  //in the below code i want to get all the doc names from the Record collection
+                  CollectionReference recordCollection = FirebaseFirestore
+                      .instance
+                      .collection("Employee")
+                      .doc(employee.id)
+                      .collection("Record");
+                  QuerySnapshot recordDocsSnapshot =
+                      await recordCollection.get();
+                  List<String> docNames =
+                      recordDocsSnapshot.docs.map((doc) => doc.id).toList();
+                  for (String dateStr in docNames) {
+                    // Split the date string into day, month, and year parts
+                    List<String> parts = dateStr.split(' ');
+
+                    // Check if the date string has enough parts
+                    if (parts.length == 3) {
+                      int? day = int.tryParse(parts[0]);
+                      String monthStr = parts[1];
+                      int? year = int.tryParse(parts[2]);
+
+                      // Define a map for converting month names to numeric values
+                      const monthMap = {
+                        'January': 1,
+                        'February': 2,
+                        'March': 3,
+                        'April': 4,
+                        'May': 5,
+                        'June': 6,
+                        'July': 7,
+                        'August': 8,
+                        'September': 9,
+                        'October': 10,
+                        'November': 11,
+                        'December': 12,
+                      };
+
+                      int month = monthMap[monthStr] ??
+                          1; // Default to January if month name is not recognized
+
+                      if (day != null && year != null) {
+                        DateTime date = DateTime(year, month, day);
+                        dayList.add(day);
+                        monthList.add(month);
+                        yearList.add(year);
+                      }
+                    }
+                  }
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => MyHeatMapCalendar(
+                      id: employee.id,
+                      name: '${employee.firstName} ${employee.lastName}',
+                      dayList: dayList,
+                      monthList: monthList,
+                      yearList: yearList,
                     ),
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.arrow_forward_ios,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          selectedEmployee = employee;
-                        });
-                      },
-                    ),
-                    title: Text('${employee.firstName} ${employee.lastName}'),
-                  ),
-                );
-              },
-            )
-          : const MyHeatMapCalendar(),
+                  ));
+                },
+              ),
+              title: Text('${employee.firstName} ${employee.lastName}'),
+            ),
+          );
+        },
+      ),
     );
   }
 }

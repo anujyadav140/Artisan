@@ -53,8 +53,11 @@ class EmployeeDetailsDialog extends StatelessWidget {
           Divider(),
           ListTile(
             title: CircleAvatar(
-              backgroundImage: NetworkImage(profilePic),
               radius: 60,
+              backgroundImage: NetworkImage(
+                profilePic,
+                scale: 1.0,
+              ),
             ),
           ),
           Divider(),
