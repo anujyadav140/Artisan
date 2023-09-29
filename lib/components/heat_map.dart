@@ -10,12 +10,14 @@ class MyHeatMapCalendar extends StatefulWidget {
     super.key,
     required this.name,
     required this.id,
+    required this.username,
     required this.dayList,
     required this.monthList,
     required this.yearList,
   });
   String id;
   String name;
+  String username;
   List<int> dayList;
   List<int> monthList;
   List<int> yearList;
@@ -34,11 +36,65 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
   double screenWidth = 0;
   @override
   void initState() {
+    renderDates();
     super.initState();
+  }
+
+  void renderDates() {
     for (int i = 0; i < widget.dayList.length; i++) {
       final DateTime date =
           DateTime(widget.yearList[i], widget.monthList[i], widget.dayList[i]);
       calendarData[date] = 10;
+    }
+  }
+
+  void renderSingleDateDetails() async {
+    //in the below code i want to get all the doc names from the Record collection
+    CollectionReference recordCollection = FirebaseFirestore.instance
+        .collection("Employee")
+        .doc(widget.id)
+        .collection("Record");
+    QuerySnapshot recordDocsSnapshot = await recordCollection.get();
+    List<String> docNames =
+        recordDocsSnapshot.docs.map((doc) => doc.id).toList();
+    for (String dateStr in docNames) {
+      // Split the date string into day, month, and year parts
+      List<String> parts = dateStr.split(' ');
+
+      // Check if the date string has enough parts
+      if (parts.length == 3) {
+        int? day = int.tryParse(parts[0]);
+        String monthStr = parts[1];
+        int? year = int.tryParse(parts[2]);
+
+        // Define a map for converting month names to numeric values
+        const monthMap = {
+          'January': 1,
+          'February': 2,
+          'March': 3,
+          'April': 4,
+          'May': 5,
+          'June': 6,
+          'July': 7,
+          'August': 8,
+          'September': 9,
+          'October': 10,
+          'November': 11,
+          'December': 12,
+        };
+
+        int month = monthMap[monthStr] ??
+            1; // Default to January if month name is not recognized
+
+        if (day != null && year != null) {
+          setState(() {
+            DateTime date = DateTime(year, month, day);
+            widget.dayList.add(day);
+            widget.monthList.add(month);
+            widget.yearList.add(year);
+          });
+        }
+      }
     }
   }
 
@@ -55,13 +111,33 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
     });
   }
 
+  void renderHeatMapCalender(DateTime value) {
+    final formattedSelectedDate = DateFormat('d MMMM y').format(value);
+    Future<DocumentSnapshot<Map<String, dynamic>>> selectedDateAttendance =
+        FirebaseFirestore.instance
+            .collection("Employee")
+            .doc(widget.id)
+            .collection("Record")
+            .doc(formattedSelectedDate)
+            .get();
+
+    selectedDateAttendance.then((values) {
+      updateDetails(
+          values['date'],
+          values['checkIn'],
+          values['checkInLocation'],
+          values['checkOut'],
+          values['checkOutLocation']);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Attendance Calender-${widget.name}',
+          'Attendance Calender-${widget.name.isEmpty ? widget.username : widget.name}',
           style: TextStyle(
             fontFamily: "NexaBold",
             fontSize: kIsWeb ? 25 : screenWidth / 30,
@@ -95,24 +171,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                     1: Colors.blue,
                   },
                   onClick: (value) {
-                    final formattedSelectedDate =
-                        DateFormat('d MMMM y').format(value);
-                    Future<DocumentSnapshot<Map<String, dynamic>>>
-                        selectedDateAttendance = FirebaseFirestore.instance
-                            .collection("Employee")
-                            .doc(widget.id)
-                            .collection("Record")
-                            .doc(formattedSelectedDate)
-                            .get();
-
-                    selectedDateAttendance.then((value) {
-                      updateDetails(
-                          value['date'],
-                          value['checkIn'],
-                          value['checkInLocation'],
-                          value['checkOut'],
-                          value['checkOutLocation']);
-                    });
+                    renderHeatMapCalender(value);
                   },
                 ),
               ),
@@ -318,6 +377,17 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
             )
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          widget.dayList.clear();
+          widget.monthList.clear();
+          widget.yearList.clear();
+          calendarData.clear();
+          renderSingleDateDetails();
+          renderDates();
+        },
+        child: const Icon(Icons.refresh),
       ),
     );
   }

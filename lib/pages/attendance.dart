@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 
 class Employee {
   final String id;
+  final String username;
   final String firstName;
   final String lastName;
 
   Employee(
     this.id,
+    this.username,
     this.firstName,
     this.lastName,
   );
@@ -30,15 +32,84 @@ class _AttendanceState extends State<Attendance> {
 
   Employee? selectedEmployee;
 
+  void fillDateList(int index) async {
+    final employee = employees[index];
+    dayList = [];
+    monthList = [];
+    yearList = [];
+    setState(() {
+      selectedEmployee = employee;
+    });
+    //in the below code i want to get all the doc names from the Record collection
+    CollectionReference recordCollection = FirebaseFirestore.instance
+        .collection("Employee")
+        .doc(employee.id)
+        .collection("Record");
+    QuerySnapshot recordDocsSnapshot = await recordCollection.get();
+    List<String> docNames =
+        recordDocsSnapshot.docs.map((doc) => doc.id).toList();
+    for (String dateStr in docNames) {
+      // Split the date string into day, month, and year parts
+      List<String> parts = dateStr.split(' ');
+
+      // Check if the date string has enough parts
+      if (parts.length == 3) {
+        int? day = int.tryParse(parts[0]);
+        String monthStr = parts[1];
+        int? year = int.tryParse(parts[2]);
+
+        // Define a map for converting month names to numeric values
+        const monthMap = {
+          'January': 1,
+          'February': 2,
+          'March': 3,
+          'April': 4,
+          'May': 5,
+          'June': 6,
+          'July': 7,
+          'August': 8,
+          'September': 9,
+          'October': 10,
+          'November': 11,
+          'December': 12,
+        };
+
+        int month = monthMap[monthStr] ??
+            1; // Default to January if month name is not recognized
+
+        if (day != null && year != null) {
+          DateTime date = DateTime(year, month, day);
+          dayList.add(day);
+          monthList.add(month);
+          yearList.add(year);
+        }
+      }
+    }
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => MyHeatMapCalendar(
+        id: employee.id,
+        username: employee.username,
+        name: '${employee.firstName} ${employee.lastName}',
+        dayList: dayList,
+        monthList: monthList,
+        yearList: yearList,
+      ),
+    ));
+  }
+
   Future<List<Map<String, dynamic>>> fetchEmployeeData() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('Employee').get();
 
     return querySnapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+
       return {
-        'id': doc.id, // This will contain the auto-generated document ID
-        'firstName': doc['firstName'], // This will contain the first name
-        'lastName': doc['lastName'], // This will contain the last name
+        'id': doc.id,
+        'username': data['id'] ?? '',
+        'firstName': data['firstName'] ?? '',
+        'lastName': data['lastName'] ?? '',
       };
     }).toList();
   }
@@ -49,7 +120,8 @@ class _AttendanceState extends State<Attendance> {
     fetchEmployeeData().then((value) {
       setState(() {
         employees = value
-            .map((e) => Employee(e['id'], e['firstName'], e['lastName']))
+            .map((e) =>
+                Employee(e['id'], e['username'], e['firstName'], e['lastName']))
             .toList();
       });
     });
@@ -111,72 +183,13 @@ class _AttendanceState extends State<Attendance> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: () async {
-                  List<int> dayList = [];
-                  List<int> monthList = [];
-                  List<int> yearList = [];
-                  setState(() {
-                    selectedEmployee = employee;
-                  });
-                  //in the below code i want to get all the doc names from the Record collection
-                  CollectionReference recordCollection = FirebaseFirestore
-                      .instance
-                      .collection("Employee")
-                      .doc(employee.id)
-                      .collection("Record");
-                  QuerySnapshot recordDocsSnapshot =
-                      await recordCollection.get();
-                  List<String> docNames =
-                      recordDocsSnapshot.docs.map((doc) => doc.id).toList();
-                  for (String dateStr in docNames) {
-                    // Split the date string into day, month, and year parts
-                    List<String> parts = dateStr.split(' ');
-
-                    // Check if the date string has enough parts
-                    if (parts.length == 3) {
-                      int? day = int.tryParse(parts[0]);
-                      String monthStr = parts[1];
-                      int? year = int.tryParse(parts[2]);
-
-                      // Define a map for converting month names to numeric values
-                      const monthMap = {
-                        'January': 1,
-                        'February': 2,
-                        'March': 3,
-                        'April': 4,
-                        'May': 5,
-                        'June': 6,
-                        'July': 7,
-                        'August': 8,
-                        'September': 9,
-                        'October': 10,
-                        'November': 11,
-                        'December': 12,
-                      };
-
-                      int month = monthMap[monthStr] ??
-                          1; // Default to January if month name is not recognized
-
-                      if (day != null && year != null) {
-                        DateTime date = DateTime(year, month, day);
-                        dayList.add(day);
-                        monthList.add(month);
-                        yearList.add(year);
-                      }
-                    }
-                  }
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => MyHeatMapCalendar(
-                      id: employee.id,
-                      name: '${employee.firstName} ${employee.lastName}',
-                      dayList: dayList,
-                      monthList: monthList,
-                      yearList: yearList,
-                    ),
-                  ));
+                  fillDateList(index);
                 },
               ),
-              title: Text('${employee.firstName} ${employee.lastName}'),
+              title: Text(
+                  employee.firstName.isEmpty && employee.lastName.isEmpty
+                      ? employee.username
+                      : '${employee.firstName} ${employee.lastName}'),
             ),
           );
         },
