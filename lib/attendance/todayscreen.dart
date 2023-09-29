@@ -170,14 +170,27 @@ class _TodayScreenState extends State<TodayScreen> {
     }
   }
 
-  void _getLocation() async {
-    List<Placemark> placemark =
-        await placemarkFromCoordinates(User.lat, User.long);
+  Future<void> _getLocation() async {
+    try {
+      final List<Placemark> placemark =
+          await placemarkFromCoordinates(User.lat, User.long);
 
-    setState(() {
-      location =
-          "${placemark[0].street}, ${placemark[0].administrativeArea}, ${placemark[0].postalCode}, ${placemark[0].country}";
-    });
+      if (placemark.isNotEmpty) {
+        setState(() {
+          location =
+              "${placemark[0].street}, ${placemark[0].administrativeArea}, ${placemark[0].postalCode}, ${placemark[0].country}";
+        });
+      } else {
+        setState(() {
+          location = "Location not available";
+        });
+      }
+    } catch (e) {
+      print("Error getting location: $e");
+      setState(() {
+        location = "Location not available";
+      });
+    }
   }
 
   void _getRecord() async {

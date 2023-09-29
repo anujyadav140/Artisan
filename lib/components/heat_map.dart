@@ -57,6 +57,10 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
     QuerySnapshot recordDocsSnapshot = await recordCollection.get();
     List<String> docNames =
         recordDocsSnapshot.docs.map((doc) => doc.id).toList();
+
+    // Create a copy of the current calendarData
+    Map<DateTime, int> newCalendarData = Map.from(calendarData);
+
     for (String dateStr in docNames) {
       // Split the date string into day, month, and year parts
       List<String> parts = dateStr.split(' ');
@@ -87,15 +91,29 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
             1; // Default to January if month name is not recognized
 
         if (day != null && year != null) {
-          setState(() {
-            DateTime date = DateTime(year, month, day);
-            widget.dayList.add(day);
-            widget.monthList.add(month);
-            widget.yearList.add(year);
-          });
+          DateTime date = DateTime(year, month, day);
+          newCalendarData[date] = 10;
         }
       }
     }
+
+    // Check if there is a change in the calendarData
+    if (!mapsAreEqual(calendarData, newCalendarData)) {
+      setState(() {
+        calendarData = newCalendarData;
+      });
+    }
+  }
+
+// Function to check if two maps are equal
+  bool mapsAreEqual(Map<dynamic, dynamic> map1, Map<dynamic, dynamic> map2) {
+    if (map1.length != map2.length) return false;
+
+    for (var key in map1.keys) {
+      if (!map2.containsKey(key) || map1[key] != map2[key]) return false;
+    }
+
+    return true;
   }
 
   void updateDetails(Timestamp date, String checkIn, String checkInLoc,
