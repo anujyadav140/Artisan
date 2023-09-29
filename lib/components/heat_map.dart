@@ -116,16 +116,16 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
     return true;
   }
 
-  void updateDetails(Timestamp date, String checkIn, String checkInLoc,
-      String checkOut, String checkOutLoc) {
+  void updateDetails(Timestamp date, String checkIn, String checkOut,
+      String checkOutLoc, String checkInLoc) {
     final DateTime dateTime = date.toDate();
 
     setState(() {
       selectedDate = dateTime;
       checkInTime = checkIn;
       checkOutTime = checkOut;
-      checkInLocation = checkInLoc;
       checkOutLocation = checkOutLoc;
+      checkInLocation = checkInLoc;
     });
   }
 
@@ -140,12 +140,21 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
             .get();
 
     selectedDateAttendance.then((values) {
-      updateDetails(
-          values['date'],
-          values['checkIn'],
-          values['checkInLocation'],
-          values['checkOut'],
-          values['checkOutLocation']);
+      if (values.exists) {
+        final data = values.data(); // Get the document data as a Map
+
+        if (data!.containsKey('checkInLocation')) {
+          updateDetails(data['date'], data['checkIn'], data['checkOut'],
+              data['checkOutLocation'], data['checkInLocation']);
+        } else {
+          updateDetails(data['date'], data['checkIn'], data['checkOut'],
+              data['checkOutLocation'], "Location Not Yet Available");
+        }
+      } else {
+        // Handle the case where the document does not exist
+        // You can decide what to do in this case
+        print("Document does not exist");
+      }
     });
   }
 
@@ -328,7 +337,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                         ),
                         Expanded(
                           child: Text(
-                            checkInLocation == "" ? "None" : checkInLocation,
+                            checkOutLocation == "" ? "None" : checkOutLocation,
                             style: TextStyle(
                               fontFamily: "NexaBold",
                               fontSize: kIsWeb ? 18 : screenWidth / 30,
@@ -380,7 +389,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
                         ),
                         Expanded(
                           child: Text(
-                            checkOutLocation == "" ? "None" : checkOutLocation,
+                            checkInLocation == "" ? "None" : checkInLocation,
                             style: TextStyle(
                               fontFamily: "NexaBold",
                               fontSize: kIsWeb ? 18 : screenWidth / 30,
@@ -401,6 +410,7 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
           widget.dayList.clear();
           widget.monthList.clear();
           widget.yearList.clear();
+          calendarData.clear();
           renderSingleDateDetails();
           renderDates();
         },
