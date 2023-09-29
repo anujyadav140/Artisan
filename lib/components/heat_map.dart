@@ -401,7 +401,6 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
           widget.dayList.clear();
           widget.monthList.clear();
           widget.yearList.clear();
-          calendarData.clear();
           renderSingleDateDetails();
           renderDates();
         },
