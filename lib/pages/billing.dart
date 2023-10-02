@@ -133,7 +133,7 @@ class _BillingState extends State<Billing> {
   double discountPercentage = 0.0;
   TextEditingController discountController = TextEditingController();
 
-  // Function to calculate the total
+// Function to calculate the total with discount
   double calculateTotal() {
     double total = 0.0;
 
@@ -144,15 +144,18 @@ class _BillingState extends State<Billing> {
       }
     }
 
+    // Calculate the discount amount based on the discountPercentage
+    double discountAmount = (total * discountPercentage) / 100.0;
+
     // Apply the discount
-    total = total - discountPercentage;
+    total -= discountAmount;
 
     return total;
   }
 
   List<String> fetchedServices = [];
   List<String> services = []; // List to store dynamic services
-
+  int maxDisplayedServices = 4;
 // Method to fetch services from Firestore
   Future<void> fetchServicesFromFirestore() async {
     try {
@@ -345,23 +348,41 @@ class _BillingState extends State<Billing> {
                               prefixIcon: Icon(Icons.search),
                             ),
                           ),
-
                           const SizedBox(height: 10),
-                          // Display the list of available items
-                          for (final item in fetchedServices)
-                            CheckboxListTile(
-                              title: Text(item),
-                              value: selectedItems.contains(item),
-                              onChanged: (value) {
-                                setState(() {
-                                  if (value == true) {
-                                    selectedItems.add(item);
-                                  } else {
-                                    selectedItems.remove(item);
-                                  }
-                                });
-                              },
-                            ),
+                          // Display the list of available items using ListView.builder
+                          fetchedServices.isEmpty
+                              ? const Center(
+                                  child: Text('No services found'),
+                                )
+                              : SizedBox(
+                                  height: MediaQuery.of(context).size.height *
+                                      0.4, // Specify a fixed height for the list
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: fetchedServices.length,
+                                    itemBuilder: (context, index) {
+                                      final item = fetchedServices[index];
+                                      return CheckboxListTile(
+                                        title: Text(item),
+                                        value: selectedItems.contains(item),
+                                        checkboxShape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        activeColor: Colors.blue,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            if (value == true) {
+                                              selectedItems.add(item);
+                                            } else {
+                                              selectedItems.remove(item);
+                                            }
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
                         ],
                       ),
                     ),
