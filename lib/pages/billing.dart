@@ -128,14 +128,7 @@ class _BillingState extends State<Billing> {
   List<String> allItems = []; // List to store all available items
   List<String> filteredItems = [];
   // Define a map to store service prices
-  Map<String, double> servicePrices = {
-    'Haircut': 10.0, // Replace with actual prices for your services
-    'Hair Color': 20.0,
-    'Manicure': 15.0,
-    'Pedicure': 25.0,
-    'Facial': 30.0,
-    'Massage': 20.0,
-  };
+  Map<String, double> servicePrices = {};
 
   double discountPercentage = 0.0;
   TextEditingController discountController = TextEditingController();
@@ -157,19 +150,44 @@ class _BillingState extends State<Billing> {
     return total;
   }
 
+  List<String> fetchedServices = [];
+  List<String> services = []; // List to store dynamic services
+
+// Method to fetch services from Firestore
+  Future<void> fetchServicesFromFirestore() async {
+    try {
+      final QuerySnapshot serviceSnapshot =
+          await FirebaseFirestore.instance.collection('Services').get();
+
+      if (serviceSnapshot.docs.isNotEmpty) {
+        for (final DocumentSnapshot doc in serviceSnapshot.docs) {
+          final serviceName = doc['serviceName']; // Field name for service name
+          final servicePrice =
+              doc['servicePrice']; // Field name for service price
+
+          if (serviceName is String && servicePrice is double) {
+            final serviceInfo = serviceName;
+            fetchedServices.add(serviceInfo);
+            servicePrices[serviceInfo] = servicePrice;
+          }
+        }
+
+        setState(() {
+          services = fetchedServices;
+          allItems = services; // Update the list of all items with services
+        });
+      }
+    } catch (error) {
+      print("Error fetching services: $error");
+    }
+  }
+
   @override
   void initState() {
+    fetchServicesFromFirestore();
     super.initState();
-
     // Initialize the list of allItems (e.g., load data from a source)
-    allItems = [
-      'Haircut',
-      'Hair Color',
-      'Manicure',
-      'Pedicure',
-      'Facial',
-      'Massage',
-    ];
+
     filteredItems = allItems; // List to store filtered items
   }
 
@@ -315,7 +333,7 @@ class _BillingState extends State<Billing> {
                             onChanged: (query) {
                               setState(() {
                                 // Filter the available items based on the query
-                                filteredItems = allItems.where((item) {
+                                fetchedServices = allItems.where((item) {
                                   return item
                                       .toLowerCase()
                                       .contains(query.toLowerCase());
@@ -330,7 +348,7 @@ class _BillingState extends State<Billing> {
 
                           const SizedBox(height: 10),
                           // Display the list of available items
-                          for (final item in filteredItems)
+                          for (final item in fetchedServices)
                             CheckboxListTile(
                               title: Text(item),
                               value: selectedItems.contains(item),
@@ -384,7 +402,7 @@ class _BillingState extends State<Billing> {
                   ),
                   // Display the total
                   Text(
-                    'Total: \$${calculateTotal().toStringAsFixed(2)}', // Format to 2 decimal places
+                    'Total: ₹${calculateTotal().toStringAsFixed(2)}', // Format to 2 decimal places
                     style: TextStyle(
                       fontSize: isWeb(context) ? w / 80 : w / 20,
                     ),
@@ -420,13 +438,6 @@ class _BillingState extends State<Billing> {
                             servicePrices[serviceName]!;
                       }
                     }
-                    print("_________________________");
-                    print(phoneNumber);
-                    print(name);
-                    print(visitDate);
-                    print(selectedItems);
-                    print(calculateTotal().toStringAsFixed(2));
-                    print("_________________________");
                     ClientService().clientEngagement(
                       phoneNumber,
                       name,
