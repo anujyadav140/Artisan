@@ -11,6 +11,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 class MySearchDelegate extends SearchDelegate {
   @override
@@ -131,15 +132,6 @@ class _ClientPageState extends State<ClientPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize all services as unchecked
-    for (String service in salonServices) {
-      serviceCheckboxes[service] = false;
-    }
-
-    streamData = FirebaseFirestore.instance
-        .collection('Clients')
-        .orderBy('visits', descending: true)
-        .snapshots();
   }
 
   DateTime now = DateTime.now();
@@ -256,6 +248,7 @@ class _ClientPageState extends State<ClientPage> {
         title: Text(
           'Client Page',
           style: TextStyle(
+            fontFamily: "NexaBold",
             fontSize: isWeb(context) ? w / 80 : w / 20,
           ),
         ),
@@ -411,6 +404,8 @@ class _ClientPageState extends State<ClientPage> {
     String name = client['name'];
     String phoneNumber = client['phoneNumber'];
     String latestDate = visitDates.last;
+    DateTime parsedLastDate = DateTime.parse(latestDate);
+    String formattedLastDate = DateFormat('d-MM-yyyy').format(parsedLastDate);
 
     List<String> amounts = [];
     List<List<String>> servicesList = [];
@@ -430,34 +425,85 @@ class _ClientPageState extends State<ClientPage> {
       title: Text(
         name,
         style: TextStyle(
-          fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+          fontFamily: "NexaBold",
+          fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 25,
         ),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Phone Number: $phoneNumber',
+            phoneNumber,
             style: TextStyle(
+              fontFamily: "NexaBold",
               fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+              color: Colors.blue,
             ),
           ),
-          Text(
-            'Last Visit Date: $latestDate',
-            style: TextStyle(
-              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: "NexaBold",
+                fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 25,
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: 'Last Visit Date: ',
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: formattedLastDate,
+                  style: TextStyle(
+                    color: Colors.blue, // Set the color to blue here
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            'Services: ${latestServicesAvailed.join(", ")}',
-            style: TextStyle(
-              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: "NexaBold",
+                fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 25,
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: 'Services: ',
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: latestServicesAvailed.join(", "),
+                  style: TextStyle(
+                    color: Colors.blue, // Set the color to blue here
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            'Amount Last Spent: $latestSpentAmount',
-            style: TextStyle(
-              fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 30,
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: "NexaBold",
+                fontSize: _ClientPageState().isWeb(context) ? w / 80 : w / 25,
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: 'Amount Last Spent: ',
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: '₹$latestSpentAmount',
+                  style: TextStyle(
+                    color: Colors.blue, // Set the color to blue here
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 10),
@@ -474,6 +520,7 @@ class _ClientPageState extends State<ClientPage> {
                   child: Text(
                     'History',
                     style: TextStyle(
+                      fontFamily: "NexaBold",
                       fontSize:
                           _ClientPageState().isWeb(context) ? w / 80 : w / 30,
                     ),
@@ -495,6 +542,7 @@ class _ClientPageState extends State<ClientPage> {
                 child: Text(
                   'Update',
                   style: TextStyle(
+                    fontFamily: "NexaBold",
                     fontSize:
                         _ClientPageState().isWeb(context) ? w / 80 : w / 30,
                   ),
@@ -1033,14 +1081,17 @@ class _ClientPageState extends State<ClientPage> {
       builder: (context) {
         double w = MediaQuery.of(context).size.width;
         return AlertDialog(
+          backgroundColor: Colors.blue[50],
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Client History',
+                'History',
                 style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                ),
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
+                    color: Colors.blue),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -1051,9 +1102,10 @@ class _ClientPageState extends State<ClientPage> {
                 child: Text(
                   'Statistics',
                   style: TextStyle(
-                    fontSize:
-                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                  ),
+                      fontFamily: "NexaBold",
+                      fontSize:
+                          kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
+                      color: Colors.white),
                 ),
               ),
             ],
@@ -1078,8 +1130,9 @@ class _ClientPageState extends State<ClientPage> {
               child: Text(
                 'Close',
                 style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                ),
+                    fontSize:
+                        kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
+                    color: Colors.blue),
               ),
             ),
           ],
@@ -1109,8 +1162,9 @@ class _ClientPageState extends State<ClientPage> {
           title: Text(
             'Statistics',
             style: TextStyle(
-              fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-            ),
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
+                color: Colors.blue),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1153,7 +1207,7 @@ class _ClientPageState extends State<ClientPage> {
                           _ClientPageState().isWeb(context) ? w / 100 : w / 30,
                     ),
                   ),
-                  borderColor: Colors.deepPurple,
+                  borderColor: Colors.blue,
                   primaryXAxis: CategoryAxis(),
                   primaryYAxis: NumericAxis(
                     title: AxisTitle(
@@ -1185,8 +1239,10 @@ class _ClientPageState extends State<ClientPage> {
               child: Text(
                 'Close',
                 style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                ),
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
+                    color: Colors.blue),
               ),
             ),
           ],
@@ -1232,11 +1288,11 @@ class _ClientPageState extends State<ClientPage> {
     // Create PieChart sections based on the most frequently taken services
     final List<PieChartSectionData> sections = [];
     final List<Color> sectionColors = [
-      const Color.fromRGBO(179, 157, 219, 1),
-      const Color.fromRGBO(126, 87, 194, 1),
-      const Color.fromRGBO(94, 53, 177, 1),
-      const Color.fromRGBO(69, 39, 160, 1),
-      const Color.fromRGBO(49, 27, 146, 1),
+      Colors.blue,
+      Colors.blue[400]!,
+      Colors.blue[300]!,
+      Colors.blue[200]!,
+      Colors.blue[100]!,
       // Add more colors as needed
     ];
 
@@ -1332,12 +1388,13 @@ class _ClientPageState extends State<ClientPage> {
               title: Text(
                 editingIndex == -1 ? 'Add Client' : 'Edit Client',
                 style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  fontFamily: "NexaBold",
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 18,
+                  color: Colors.blue,
                 ),
               ),
               content: SizedBox(
                 width: w * 0.3,
-                height: h * 0.6,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1346,9 +1403,11 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Name',
                         labelStyle: TextStyle(
+                          fontFamily: "NexaBold",
                           fontSize: _ClientPageState().isWeb(context)
-                              ? w / 60
-                              : w / 30,
+                              ? w / 30
+                              : w / 18,
+                          color: Colors.grey,
                         ),
                       ),
                     ),
@@ -1357,41 +1416,43 @@ class _ClientPageState extends State<ClientPage> {
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: TextStyle(
+                          fontFamily: "NexaBold",
                           fontSize: _ClientPageState().isWeb(context)
-                              ? w / 60
-                              : w / 30,
+                              ? w / 30
+                              : w / 18,
+                          color: Colors.grey,
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: ListView(
-                        children: salonServices.map((service) {
-                          return CheckboxListTile(
-                            title: Text(
-                              service,
-                              style: TextStyle(
-                                fontSize: _ClientPageState().isWeb(context)
-                                    ? w / 60
-                                    : w / 30,
-                              ),
-                            ),
-                            value: serviceCheckboxes[service] ?? false,
-                            onChanged: (bool? value) {
-                              setStateInsideDialog(() {
-                                serviceCheckboxes[service] = value ?? false;
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    Text(
-                      'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize:
-                            _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: ListView(
+                    //     children: salonServices.map((service) {
+                    //       return CheckboxListTile(
+                    //         title: Text(
+                    //           service,
+                    //           style: TextStyle(
+                    //             fontSize: _ClientPageState().isWeb(context)
+                    //                 ? w / 60
+                    //                 : w / 30,
+                    //           ),
+                    //         ),
+                    //         value: serviceCheckboxes[service] ?? false,
+                    //         onChanged: (bool? value) {
+                    //           setStateInsideDialog(() {
+                    //             serviceCheckboxes[service] = value ?? false;
+                    //           });
+                    //         },
+                    //       );
+                    //     }).toList(),
+                    //   ),
+                    // ),
+                    // Text(
+                    //   'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
+                    //   style: TextStyle(
+                    //     fontSize:
+                    //         _ClientPageState().isWeb(context) ? w / 60 : w / 20,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -1404,8 +1465,10 @@ class _ClientPageState extends State<ClientPage> {
                   child: Text(
                     'Cancel',
                     style: TextStyle(
+                      fontFamily: "NexaBold",
                       fontSize:
-                          _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          _ClientPageState().isWeb(context) ? w / 60 : w / 25,
+                      color: Colors.blue,
                     ),
                   ),
                 ),
@@ -1439,8 +1502,10 @@ class _ClientPageState extends State<ClientPage> {
                   child: Text(
                     editingIndex == -1 ? 'Add' : 'Save',
                     style: TextStyle(
+                      fontFamily: "NexaBold",
                       fontSize:
-                          _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                          _ClientPageState().isWeb(context) ? w / 60 : w / 25,
+                      color: Colors.blue,
                     ),
                   ),
                 ),

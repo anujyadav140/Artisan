@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:artisan/services/authentication/auth_service.dart';
 import 'package:artisan/services/client_service.dart';
@@ -11,6 +12,7 @@ import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'dart:typed_data';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class BillingGeneration extends StatefulWidget {
   const BillingGeneration(
@@ -32,18 +34,6 @@ class _BillingGenerationState extends State<BillingGeneration> {
   ScreenshotController screenshotController = ScreenshotController();
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   String downloadURL = '';
-
-  void launchWhatsAppUri(String number) async {
-    final phoneNumber = "+91-$number";
-    final message = downloadURL;
-
-    final link = WhatsAppUnilink(
-      phoneNumber: phoneNumber,
-      text: message,
-    );
-
-    await launchUrl(link.asUri());
-  }
 
   // Function to capture and save the screenshot to Firebase Storage
   Future<void> captureAndSaveScreenshot() async {
@@ -68,6 +58,16 @@ class _BillingGenerationState extends State<BillingGeneration> {
         // Get the download URL of the uploaded screenshot
         downloadURL = await storageRef.child(fileName).getDownloadURL();
 
+        final phoneNumber = "+91-${widget.phoneNumber}";
+        final message =
+            "Hi ${widget.name},\n\nPlease find your bill here:\n $downloadURL\n\nThank you for choosing us!\n\nRegards,\nArtisan";
+
+        final link = WhatsAppUnilink(
+          phoneNumber: phoneNumber,
+          text: message,
+        );
+
+        await launchUrl(link.asUri());
         // You can now use the downloadURL as needed, e.g., save it to Firestore or display it to the user
         print('Screenshot uploaded to Firebase Storage: $downloadURL');
       }
@@ -75,6 +75,8 @@ class _BillingGenerationState extends State<BillingGeneration> {
       print('Error capturing and saving screenshot: $e');
     }
   }
+
+  void launchWhatsAppUri(String number) async {}
 
   double calculateTotal(
       Map<String, double> servicePrices, double discount, double tax) {
@@ -128,15 +130,6 @@ class _BillingGenerationState extends State<BillingGeneration> {
             Navigator.pop(scaffoldKey.currentContext!);
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: () {
-              // Capture and save the screenshot
-              captureAndSaveScreenshot();
-            },
-          ),
-        ],
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(15),
@@ -151,8 +144,8 @@ class _BillingGenerationState extends State<BillingGeneration> {
           textAlign: TextAlign.center,
           textScaleFactor: 1.2,
         ),
-        onPressed: () {
-          launchWhatsAppUri(widget.phoneNumber);
+        onPressed: () async {
+          captureAndSaveScreenshot();
         },
         icon: const Icon(Icons.request_page_outlined),
       ),
