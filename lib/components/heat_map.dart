@@ -130,7 +130,9 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
   }
 
   void renderHeatMapCalender(DateTime value) {
-    final formattedSelectedDate = DateFormat('d MMMM y').format(value);
+    print(value);
+    final formattedSelectedDate = DateFormat('dd MMMM y').format(value);
+    print(formattedSelectedDate);
     Future<DocumentSnapshot<Map<String, dynamic>>> selectedDateAttendance =
         FirebaseFirestore.instance
             .collection("Employee")

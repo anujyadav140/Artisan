@@ -79,6 +79,9 @@ class _AttendanceState extends State<Attendance> {
 
         if (day != null && year != null) {
           DateTime date = DateTime(year, month, day);
+          print(day);
+          print(month);
+          print(year);
           dayList.add(day);
           monthList.add(month);
           yearList.add(year);

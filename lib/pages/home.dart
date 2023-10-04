@@ -2,6 +2,7 @@ import 'package:artisan/attendance/loginscreen.dart';
 import 'package:artisan/main.dart';
 import 'package:artisan/pages/add_services.dart';
 import 'package:artisan/pages/attendance.dart';
+import 'package:artisan/pages/attendance_today.dart';
 import 'package:artisan/pages/billing.dart';
 import 'package:artisan/pages/client.dart';
 import 'package:artisan/services/authentication/auth_gate.dart';
@@ -109,6 +110,35 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           GestureDetector(
             onTap: () {
+              // Navigate to the services page here
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const AttendanceForTheDay(),
+              ));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30.0,
+                    backgroundImage: AssetImage('your_avatar_image.png'),
+                  ),
+                  SizedBox(width: 16.0),
+                  Text(
+                    'Attendance for the day',
+                    style: TextStyle(fontSize: 24.0),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const Attendance(),
               ));
@@ -128,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   SizedBox(width: 16.0),
                   Text(
-                    'Staff Attendance \n - attendance for today is 90%',
+                    'Total Employee Attendance History',
                     style: TextStyle(fontSize: 24.0),
                   ),
                 ],
