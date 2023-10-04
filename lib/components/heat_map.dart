@@ -153,8 +153,6 @@ class _MyHeatMapCalendarState extends State<MyHeatMapCalendar> {
               data['checkOutLocation'], "Location Not Yet Available");
         }
       } else {
-        // Handle the case where the document does not exist
-        // You can decide what to do in this case
         print("Document does not exist");
       }
     });
