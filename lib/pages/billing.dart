@@ -208,7 +208,9 @@ class _BillingState extends State<Billing> {
             await ClientService().getClientDataByPhoneNumber(query);
 
         setState(() {
-          _clientData = clientData;
+          if (_clientData != null) {
+            _clientData = clientData;
+          }
         });
       } catch (error) {
         print("Error: $error");
@@ -259,8 +261,10 @@ class _BillingState extends State<Billing> {
                     if (querySnapshot.docs.isNotEmpty) {
                       name = querySnapshot.docs.first['name'];
                       setState(() {
-                        _clientData = ClientData(
-                            name: name, phoneNumber: selectedSuggestion);
+                        if (_clientData != null) {
+                          _clientData = ClientData(
+                              name: name, phoneNumber: selectedSuggestion);
+                        }
                       });
                       _onSearchQueryChanged(true, selectedSuggestion);
                     } else {
@@ -299,7 +303,8 @@ class _BillingState extends State<Billing> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            context.watch<AuthService>().searchResult
+                            _clientData != null &&
+                                    context.watch<AuthService>().searchResult
                                 ? 'Client Name: ${_clientData!.name}'
                                 : 'Client Name: $name',
                             style: TextStyle(
@@ -307,7 +312,8 @@ class _BillingState extends State<Billing> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            context.watch<AuthService>().searchResult
+                            _clientData != null &&
+                                    context.watch<AuthService>().searchResult
                                 ? 'Phone Number: ${_clientData!.phoneNumber}'
                                 : 'Phone Number: $phoneNumber',
                             style: TextStyle(
