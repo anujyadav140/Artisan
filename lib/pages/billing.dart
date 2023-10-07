@@ -231,8 +231,22 @@ class _BillingState extends State<Billing> {
       key: scaffoldKey,
       appBar: AppBar(
         title: _clientData != null
-            ? Text('Billing for Client ${_clientData!.name}')
-            : const Text('Choose a client through search'),
+            ? Text(
+                'Billing for Client ${_clientData!.name}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 25 : w / 30,
+                ),
+              )
+            : Text(
+                'Choose a client through search',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 25 : w / 30,
+                ),
+              ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           icon: const Icon(
@@ -302,24 +316,87 @@ class _BillingState extends State<Billing> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _clientData != null &&
-                                    context.watch<AuthService>().searchResult
-                                ? 'Client Name: ${_clientData!.name}'
-                                : 'Client Name: $name',
-                            style: TextStyle(
-                                fontSize: isWeb(context) ? w / 80 : w / 20),
+                          // Text(
+                          //   _clientData != null &&
+                          //           context.watch<AuthService>().searchResult
+                          //       ? 'Client Name: ${_clientData!.name}'
+                          //       : 'Client Name: $name',
+                          //   style: TextStyle(
+                          //       fontSize: isWeb(context) ? w / 80 : w / 20),
+                          // ),
+                          // const SizedBox(height: 10),
+                          // Text(
+                          //   _clientData != null &&
+                          //           context.watch<AuthService>().searchResult
+                          //       ? 'Phone Number: ${_clientData!.phoneNumber}'
+                          //       : 'Phone Number: $phoneNumber',
+                          //   style: TextStyle(
+                          //       fontSize: isWeb(context) ? w / 80 : w / 20),
+                          // ),
+                          Column(
+                            children: [
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.15,
+                                decoration: const BoxDecoration(
+                                  color: Colors.transparent,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.transparent,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 0),
+                                    ),
+                                  ],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      margin:
+                                          const EdgeInsets.only(right: 10.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10)),
+                                      ),
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 12.0, right: 30.0),
+                                          child: Text(
+                                            "Name &\nPhone Number",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontFamily: "NexaBold",
+                                              fontSize: kIsWeb ? 25 : w / 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        _clientData != null &&
+                                                context
+                                                    .watch<AuthService>()
+                                                    .searchResult
+                                            ? '${_clientData!.name} - ${_clientData!.phoneNumber}'
+                                            : '$name - $phoneNumber',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontFamily: "NexaBold",
+                                          fontSize: kIsWeb ? 25 : w / 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _clientData != null &&
-                                    context.watch<AuthService>().searchResult
-                                ? 'Phone Number: ${_clientData!.phoneNumber}'
-                                : 'Phone Number: $phoneNumber',
-                            style: TextStyle(
-                                fontSize: isWeb(context) ? w / 80 : w / 20),
-                          ),
-                          // Display other client information as needed
                         ],
                       ),
                     ),
@@ -336,7 +413,10 @@ class _BillingState extends State<Billing> {
                           Text(
                             'Select Services',
                             style: TextStyle(
-                                fontSize: isWeb(context) ? w / 80 : w / 20),
+                              color: Colors.black,
+                              fontFamily: "NexaBold",
+                              fontSize: kIsWeb ? 25 : w / 30,
+                            ),
                           ),
                           TextField(
                             onChanged: (query) {
@@ -349,16 +429,31 @@ class _BillingState extends State<Billing> {
                                 }).toList();
                               });
                             },
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Search Services',
-                              prefixIcon: Icon(Icons.search),
+                              labelStyle: TextStyle(
+                                fontFamily: "NexaBold",
+                                fontSize: kIsWeb ? 20 : w / 25,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                size: 30,
+                                color: Colors.blue,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
                           // Display the list of available items using ListView.builder
                           fetchedServices.isEmpty
-                              ? const Center(
-                                  child: Text('No services found'),
+                              ? Center(
+                                  child: Text(
+                                    'No services found',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: "NexaBold",
+                                      fontSize: kIsWeb ? 25 : w / 30,
+                                    ),
+                                  ),
                                 )
                               : SizedBox(
                                   height: MediaQuery.of(context).size.height *
@@ -369,7 +464,14 @@ class _BillingState extends State<Billing> {
                                     itemBuilder: (context, index) {
                                       final item = fetchedServices[index];
                                       return CheckboxListTile(
-                                        title: Text(item),
+                                        title: Text(
+                                          item,
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                            fontFamily: "NexaBold",
+                                            fontSize: kIsWeb ? 20 : w / 25,
+                                          ),
+                                        ),
                                         value: selectedItems.contains(item),
                                         checkboxShape: RoundedRectangleBorder(
                                           borderRadius:
@@ -414,7 +516,8 @@ class _BillingState extends State<Billing> {
                               decoration: InputDecoration(
                                 labelText: 'Discount Percentage',
                                 labelStyle: TextStyle(
-                                  fontSize: isWeb(context) ? w / 80 : w / 20,
+                                  fontFamily: "NexaBold",
+                                  fontSize: kIsWeb ? 20 : w / 25,
                                 ),
                               ),
                             ),
@@ -428,10 +531,15 @@ class _BillingState extends State<Billing> {
                     ),
                   ),
                   // Display the total
-                  Text(
-                    'Total: ₹${calculateTotal().toStringAsFixed(2)}', // Format to 2 decimal places
-                    style: TextStyle(
-                      fontSize: isWeb(context) ? w / 80 : w / 20,
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      'Total: ₹${calculateTotal().toStringAsFixed(2)}', // Format to 2 decimal places
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: "NexaBold",
+                        fontSize: kIsWeb ? 25 : w / 30,
+                      ),
                     ),
                   ),
                 ],

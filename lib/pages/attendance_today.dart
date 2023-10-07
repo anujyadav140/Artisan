@@ -194,7 +194,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
                               }
                               renderEmployeeAttendanceDetails(employeeId);
                             },
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.info,
                               color: Colors.blue,
                             ),

@@ -1,6 +1,7 @@
 import 'package:artisan/components/employee_details.dart';
 import 'package:artisan/components/heat_map.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Employee {
@@ -132,12 +133,20 @@ class _AttendanceState extends State<Attendance> {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
     String profilePic = '';
     String birthDate = '';
     String address = '';
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employee Attendance List'),
+        title: Text(
+          'Employee Attendance List',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: "NexaBold",
+            fontSize: kIsWeb ? 25 : w / 30,
+          ),
+        ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(15), // Rounded bottom edges
@@ -190,9 +199,15 @@ class _AttendanceState extends State<Attendance> {
                 },
               ),
               title: Text(
-                  employee.firstName.isEmpty && employee.lastName.isEmpty
-                      ? employee.username
-                      : '${employee.firstName} ${employee.lastName}'),
+                employee.firstName.isEmpty && employee.lastName.isEmpty
+                    ? employee.username
+                    : '${employee.firstName} ${employee.lastName}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 20 : w / 25,
+                ),
+              ),
             ),
           );
         },

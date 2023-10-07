@@ -76,8 +76,6 @@ class _BillingGenerationState extends State<BillingGeneration> {
     }
   }
 
-  void launchWhatsAppUri(String number) async {}
-
   double calculateTotal(
       Map<String, double> servicePrices, double discount, double tax) {
     double total = 0;
@@ -91,20 +89,9 @@ class _BillingGenerationState extends State<BillingGeneration> {
   @override
   Widget build(BuildContext context) {
     double w = MediaQuery.of(context).size.width;
-    double h = MediaQuery.of(context).size.height; // Remove height calculation
+    double h = MediaQuery.of(context).size.height;
 
-    // Map<String, double> servicePrices = {
-    //   'Haircut': 10.0,
-    //   'Hair Color': 20.0,
-    //   'Manicure': 15.0,
-    //   'Pedicure': 25.0,
-    //   'Facial': 30.0,
-    //   'Massage': 20.0,
-    // };
-
-    // Add discount and tax
-    // double discount = 10; // Change this to your discount amount
-    double tax = 5; // Change this to your tax rate
+    double tax = 0;
 
     bool isWeb(BuildContext context) {
       if (kIsWeb) {

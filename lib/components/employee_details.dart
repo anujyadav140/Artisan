@@ -30,6 +30,7 @@ class EmployeeDetailsDialog extends StatelessWidget {
   }
 
   contentBox(context) {
+    final w = MediaQuery.of(context).size.width;
     return Container(
       width: 400,
       decoration: BoxDecoration(
@@ -45,12 +46,13 @@ class EmployeeDetailsDialog extends StatelessWidget {
             child: Text(
               "Employee Details",
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 25 : w / 30,
               ),
             ),
           ),
-          Divider(),
+          const Divider(),
           ListTile(
             title: CircleAvatar(
               radius: 60,
@@ -60,37 +62,97 @@ class EmployeeDetailsDialog extends StatelessWidget {
               ),
             ),
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text("First Name:"),
+            leading: const Icon(
+              Icons.person,
+              size: 30,
+              color: Colors.blue,
+            ),
+            title: Text(
+              "First Name:",
+              style: TextStyle(
+                color: Colors.blue,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 20 : w / 25,
+              ),
+            ),
             subtitle: Text(
               firstName,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 18 : w / 20,
+              ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text("Last Name:"),
+            leading: const Icon(
+              Icons.person,
+              size: 30,
+              color: Colors.blue,
+            ),
+            title: Text(
+              "Last Name:",
+              style: TextStyle(
+                color: Colors.blue,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 20 : w / 25,
+              ),
+            ),
             subtitle: Text(
               lastName,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 18 : w / 20,
+              ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.location_on),
-            title: Text("Address:"),
+            leading: const Icon(
+              Icons.location_on,
+              size: 30,
+              color: Colors.blue,
+            ),
+            title: Text(
+              "Address:",
+              style: TextStyle(
+                color: Colors.blue,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 20 : w / 25,
+              ),
+            ),
             subtitle: Text(
               address,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 18 : w / 20,
+              ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.calendar_today),
-            title: Text("Birth Date:"),
+            leading: const Icon(
+              Icons.calendar_today,
+              size: 30,
+              color: Colors.blue,
+            ),
+            title: Text(
+              "Birth Date:",
+              style: TextStyle(
+                color: Colors.blue,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 20 : w / 25,
+              ),
+            ),
             subtitle: Text(
               birthDate,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: "NexaBold",
+                fontSize: kIsWeb ? 18 : w / 20,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -105,11 +167,12 @@ class EmployeeDetailsDialog extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
                 },
-                child: const Text(
+                child: Text(
                   "Close",
                   style: TextStyle(
-                    fontSize: 20,
                     color: Colors.blue,
+                    fontFamily: "NexaBold",
+                    fontSize: kIsWeb ? 20 : w / 25,
                   ),
                 ),
               ),
