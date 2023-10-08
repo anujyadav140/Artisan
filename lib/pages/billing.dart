@@ -4,6 +4,7 @@ import 'package:artisan/services/client_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 class MySearchDelegate extends SearchDelegate {
@@ -545,23 +546,41 @@ class _BillingState extends State<Billing> {
                 ],
               ),
             )
-          : const Center(
-              child: Text(
-                'Billing Page',
-                style: TextStyle(fontSize: 24),
+          : Center(
+              child: Column(
+                children: [
+                  Lottie.asset(
+                    'assets/billings.json',
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    fit: BoxFit.fill,
+                  ),
+                  Text(
+                    'Billing Page',
+                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 20),
+                  ),
+                ],
               ),
             ),
       floatingActionButton:
           !context.watch<AuthService>().searchResult && name.isEmpty
-              ? FloatingActionButton(
+              ? FloatingActionButton.extended(
+                  label: Text(
+                    'Add Client',
+                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 25),
+                  ),
                   onPressed: () {
                     nameController.clear();
                     phoneNumberController.clear();
                     _showAddClientDialog();
                   },
-                  child: const Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                 )
-              : FloatingActionButton(
+              : FloatingActionButton.extended(
+                  label: Text(
+                    'Generate Bill',
+                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 25),
+                  ),
                   onPressed: () {
                     final visitDate = DateTime.now();
                     final selectedServicesMap = <String, double>{};
@@ -590,7 +609,7 @@ class _BillingState extends State<Billing> {
                       ),
                     ));
                   },
-                  child: const Icon(Icons.arrow_forward),
+                  icon: const Icon(Icons.arrow_forward),
                 ),
     );
   }

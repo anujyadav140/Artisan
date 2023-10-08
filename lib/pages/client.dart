@@ -12,6 +12,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class MySearchDelegate extends SearchDelegate {
   @override
@@ -279,7 +280,22 @@ class _ClientPageState extends State<ClientPage> {
               stream: streamData,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Text('No data available');
+                  // return const Text('No data available');
+                  return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Click on the tabs to filter client data',
+                          style: TextStyle(
+                              fontFamily: "Nexabold", fontSize: w / 30),
+                        ),
+                        Lottie.asset(
+                          'assets/documents.json',
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          fit: BoxFit.fill,
+                        ),
+                      ]);
                 }
                 var clientData = snapshot.data!.docs;
                 clientData = filtering(clientData);
@@ -820,14 +836,26 @@ class _ClientPageState extends State<ClientPage> {
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData ||
                                               snapshot.data!.docs.isEmpty) {
-                                            return Text(
-                                              'No data available',
-                                              style: TextStyle(
-                                                fontSize: _ClientPageState()
-                                                        .isWeb(context)
-                                                    ? w / 60
-                                                    : w / 30,
-                                              ),
+                                            // return Text(
+                                            //   'No data available',
+                                            //   style: TextStyle(
+                                            //     fontSize: _ClientPageState()
+                                            //             .isWeb(context)
+                                            //         ? w / 60
+                                            //         : w / 30,
+                                            //   ),
+                                            // );
+                                            return Lottie.asset(
+                                              'assets/documents.json',
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.5,
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.2,
+                                              fit: BoxFit.fill,
                                             );
                                           }
 
@@ -948,14 +976,26 @@ class _ClientPageState extends State<ClientPage> {
                                         //     ConnectionState.waiting) {}
                                         if (!snapshot.hasData ||
                                             snapshot.data!.docs.isEmpty) {
-                                          return Text(
-                                            'No data available',
-                                            style: TextStyle(
-                                              fontSize: _ClientPageState()
-                                                      .isWeb(context)
-                                                  ? w / 60
-                                                  : w / 30,
-                                            ),
+                                          // return Text(
+                                          //   'No data available',
+                                          //   style: TextStyle(
+                                          //     fontSize: _ClientPageState()
+                                          //             .isWeb(context)
+                                          //         ? w / 60
+                                          //         : w / 30,
+                                          //   ),
+                                          // );
+                                          return Lottie.asset(
+                                            'assets/documents.json',
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.5,
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.2,
+                                            fit: BoxFit.fill,
                                           );
                                         }
                                         var clientData = snapshot.data!.docs;
