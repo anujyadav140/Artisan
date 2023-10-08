@@ -136,9 +136,7 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   DateTime now = DateTime.now();
-  GroupButtonController groupButtonController = GroupButtonController(
-    selectedIndex: 0,
-  );
+  GroupButtonController groupButtonController = GroupButtonController();
   List<String> filterOptions = [
     'Latest visit date to oldest visit',
     'Oldest visit date to latest visit',
@@ -287,12 +285,17 @@ class _ClientPageState extends State<ClientPage> {
                         Text(
                           'Click on the tabs to filter client data',
                           style: TextStyle(
-                              fontFamily: "Nexabold", fontSize: w / 30),
+                              fontFamily: "NexaBold",
+                              fontSize: kIsWeb ? w / 60 : w / 30),
                         ),
                         Lottie.asset(
                           'assets/documents.json',
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          height: MediaQuery.of(context).size.height * 0.5,
+                          width: kIsWeb
+                              ? MediaQuery.of(context).size.width * 0.3
+                              : MediaQuery.of(context).size.width * 0.9,
+                          height: kIsWeb
+                              ? MediaQuery.of(context).size.height * 0.5
+                              : MediaQuery.of(context).size.height * 0.5,
                           fit: BoxFit.fill,
                         ),
                       ]);

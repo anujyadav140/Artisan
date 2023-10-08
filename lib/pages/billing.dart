@@ -551,13 +551,19 @@ class _BillingState extends State<Billing> {
                 children: [
                   Lottie.asset(
                     'assets/billings.json',
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    height: MediaQuery.of(context).size.height * 0.5,
+                    width: kIsWeb
+                        ? MediaQuery.of(context).size.width * 0.3
+                        : MediaQuery.of(context).size.width * 0.9,
+                    height: kIsWeb
+                        ? MediaQuery.of(context).size.height * 0.5
+                        : MediaQuery.of(context).size.height * 0.5,
                     fit: BoxFit.fill,
                   ),
                   Text(
                     'Billing Page',
-                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 20),
+                    style: TextStyle(
+                        fontFamily: "NexaBold",
+                        fontSize: kIsWeb ? w / 60 : w / 30),
                   ),
                 ],
               ),
@@ -567,7 +573,9 @@ class _BillingState extends State<Billing> {
               ? FloatingActionButton.extended(
                   label: Text(
                     'Add Client',
-                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 25),
+                    style: TextStyle(
+                        fontFamily: "NexaBold",
+                        fontSize: kIsWeb ? w / 60 : w / 25),
                   ),
                   onPressed: () {
                     nameController.clear();
@@ -579,7 +587,9 @@ class _BillingState extends State<Billing> {
               : FloatingActionButton.extended(
                   label: Text(
                     'Generate Bill',
-                    style: TextStyle(fontFamily: "Nexabold", fontSize: w / 25),
+                    style: TextStyle(
+                        fontFamily: "NexaBold",
+                        fontSize: kIsWeb ? w / 60 : w / 25),
                   ),
                   onPressed: () {
                     final visitDate = DateTime.now();
