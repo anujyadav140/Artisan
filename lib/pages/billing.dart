@@ -317,23 +317,6 @@ class _BillingState extends State<Billing> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Text(
-                          //   _clientData != null &&
-                          //           context.watch<AuthService>().searchResult
-                          //       ? 'Client Name: ${_clientData!.name}'
-                          //       : 'Client Name: $name',
-                          //   style: TextStyle(
-                          //       fontSize: isWeb(context) ? w / 80 : w / 20),
-                          // ),
-                          // const SizedBox(height: 10),
-                          // Text(
-                          //   _clientData != null &&
-                          //           context.watch<AuthService>().searchResult
-                          //       ? 'Phone Number: ${_clientData!.phoneNumber}'
-                          //       : 'Phone Number: $phoneNumber',
-                          //   style: TextStyle(
-                          //       fontSize: isWeb(context) ? w / 80 : w / 20),
-                          // ),
                           Column(
                             children: [
                               Container(
