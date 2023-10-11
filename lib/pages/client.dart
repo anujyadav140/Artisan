@@ -641,9 +641,9 @@ class _ClientPageState extends State<ClientPage> {
                               title: Text(
                                 'Reminder',
                                 style: TextStyle(
-                                  fontSize: _ClientPageState().isWeb(context)
-                                      ? w / 60
-                                      : w / 30,
+                                  color: Colors.blue,
+                                  fontFamily: "NexaBold",
+                                  fontSize: kIsWeb ? w / 60 : w / 30,
                                 ),
                               ),
                               shape: const RoundedRectangleBorder(
@@ -1118,7 +1118,7 @@ class _ClientPageState extends State<ClientPage> {
                               style: TextStyle(
                                   fontFamily: "NexaBold",
                                   fontSize: kIsWeb
-                                      ? 22
+                                      ? MediaQuery.of(context).size.width / 60
                                       : MediaQuery.of(context).size.width / 25,
                                   color: Colors.blue),
                             ),
@@ -1256,7 +1256,7 @@ class _ClientPageState extends State<ClientPage> {
                                           ? 18
                                           : MediaQuery.of(context).size.width /
                                               25,
-                                      color: Colors.black),
+                                      color: Colors.blue),
                                 ),
                               ),
                             ],
