@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddServices extends StatefulWidget {
-  const AddServices({Key? key});
+  const AddServices({super.key});
 
   @override
   State<AddServices> createState() => _AddServicesState();
@@ -150,7 +150,7 @@ class _AddServicesState extends State<AddServices> {
                       ),
                       keyboardType: TextInputType.number,
                     ),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     ElevatedButton(
                       onPressed: _addServiceToFirestore,
                       child: Text(
@@ -337,7 +337,8 @@ class _AddServicesState extends State<AddServices> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
                                   showDialog(
                                     context: context,

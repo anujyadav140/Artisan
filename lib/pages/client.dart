@@ -130,8 +130,45 @@ class _ClientPageState extends State<ClientPage> {
   int editingIndex = -1;
   List<List<String>> pastServices = [];
   Stream<QuerySnapshot<Map<String, dynamic>>>? streamData;
+
+  List<String> fetchedServices = [];
+  List<String> services = []; // List to store dynamic services
+  List<String> allItems = []; // List to store all available items
+  List<String> filteredItems = [];
+  List<String> selectedItems = []; // List to store selected checkbox items
+  Map<String, double> servicePrices = {};
+  Future<void> fetchServicesFromFirestore() async {
+    try {
+      final QuerySnapshot serviceSnapshot =
+          await FirebaseFirestore.instance.collection('Services').get();
+
+      if (serviceSnapshot.docs.isNotEmpty) {
+        for (final DocumentSnapshot doc in serviceSnapshot.docs) {
+          final serviceName = doc['serviceName']; // Field name for service name
+          final servicePrice =
+              doc['servicePrice']; // Field name for service price
+
+          if (serviceName is String && servicePrice is double) {
+            final serviceInfo = serviceName;
+            fetchedServices.add(serviceInfo);
+            servicePrices[serviceInfo] = servicePrice;
+          }
+        }
+
+        setState(() {
+          services = fetchedServices;
+          allItems = services; // Update the list of all items with services
+        });
+      }
+    } catch (error) {
+      print("Error fetching services: $error");
+    }
+  }
+
   @override
   void initState() {
+    fetchServicesFromFirestore();
+    filteredItems = allItems; // List to store filtered items
     super.initState();
   }
 
@@ -139,7 +176,7 @@ class _ClientPageState extends State<ClientPage> {
   GroupButtonController groupButtonController = GroupButtonController();
   List<String> filterOptions = [
     'Latest visit date to oldest visit',
-    'Oldest visit date to latest visit',
+    // 'Oldest visit date to latest visit',
     'Within 2 days',
     'No reminder set'
   ];
@@ -164,28 +201,28 @@ class _ClientPageState extends State<ClientPage> {
               .snapshots();
         });
         break;
-      case 'Oldest visit date to latest visit':
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          context.read<AuthService>().searchQuery = '';
-          context.read<AuthService>().searchResult = false;
-          groupButtonController = GroupButtonController(
-            selectedIndex: 1,
-          );
-          isReminderInFewDays = false;
-          isNoReminderSet = false;
-          streamData = FirebaseFirestore.instance
-              .collection('Clients')
-              .orderBy('visits', descending: false)
-              .snapshots();
-        });
-        break;
+      // case 'Oldest visit date to latest visit':
+      //   SchedulerBinding.instance.addPostFrameCallback((_) {
+      //     context.read<AuthService>().searchQuery = '';
+      //     context.read<AuthService>().searchResult = false;
+      //     groupButtonController = GroupButtonController(
+      //       selectedIndex: 1,
+      //     );
+      //     isReminderInFewDays = false;
+      //     isNoReminderSet = false;
+      //     streamData = FirebaseFirestore.instance
+      //         .collection('Clients')
+      //         .orderBy('visits', descending: false)
+      //         .snapshots();
+      //   });
+      //   break;
       case 'Within 2 days':
         Future.delayed(const Duration(milliseconds: 1), () {
           SchedulerBinding.instance.addPostFrameCallback((_) {
             context.read<AuthService>().searchQuery = '';
             context.read<AuthService>().searchResult = false;
             groupButtonController = GroupButtonController(
-              selectedIndex: 2,
+              selectedIndex: 1,
             );
             isReminderInFewDays = true;
             isNoReminderSet = false;
@@ -201,7 +238,7 @@ class _ClientPageState extends State<ClientPage> {
           context.read<AuthService>().searchQuery = '';
           context.read<AuthService>().searchResult = false;
           groupButtonController = GroupButtonController(
-            selectedIndex: 3,
+            selectedIndex: 2,
           );
           isReminderInFewDays = false;
           isNoReminderSet = true;
@@ -307,7 +344,15 @@ class _ClientPageState extends State<ClientPage> {
                   itemBuilder: (context, index) {
                     return Column(
                       children: [
-                        _buildClientListItem(clientData, index),
+                        _buildClientListItem(
+                            clientData,
+                            index,
+                            allItems,
+                            fetchedServices,
+                            filteredItems,
+                            salonServices,
+                            selectedItems,
+                            servicePrices),
                         const Divider(),
                       ],
                     );
@@ -363,7 +408,14 @@ class _ClientPageState extends State<ClientPage> {
   }
 
   Widget _buildClientListItem(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData, int index) {
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> clientData,
+      int index,
+      List<String> fetchedServices,
+      List<String> services,
+      List<String> allItems,
+      List<String> filteredItems,
+      List<String> selectedItems,
+      Map<String, double> servicePrices) {
     final searchQuery = context.read<AuthService>().searchQuery;
     final searchResult = context.read<AuthService>().searchResult;
     if (searchResult) {
@@ -438,7 +490,6 @@ class _ClientPageState extends State<ClientPage> {
     }
     String latestSpentAmount = amounts.last;
     List<String> latestServicesAvailed = servicesList.last;
-    List<DateTime> dateTimes = [];
 
     return ListTile(
       title: Text(
@@ -607,9 +658,9 @@ class _ClientPageState extends State<ClientPage> {
                                   children: [
                                     ElevatedButton.icon(
                                       onPressed: () async {
-                                        Navigator.of(
-                                                scaffoldKey.currentContext!)
-                                            .pop();
+                                        // Navigator.of(
+                                        //         scaffoldKey.currentContext!)
+                                        //     .pop();
                                         showDialog(
                                           context: scaffoldKey.currentContext!,
                                           builder: (context) {
@@ -617,8 +668,7 @@ class _ClientPageState extends State<ClientPage> {
                                                 .now(); // Initialize with the current date and time
                                             TimeOfDay selectedTime =
                                                 TimeOfDay.now();
-                                            List<String> selectedServices =
-                                                []; // Initialize an empty list for selected services
+                                            selectedItems = [];
 
                                             return StatefulBuilder(
                                               builder: (BuildContext context,
@@ -627,9 +677,10 @@ class _ClientPageState extends State<ClientPage> {
                                                   title: Text(
                                                     'Add Reminders',
                                                     style: TextStyle(
-                                                      fontSize: isWeb(context)
-                                                          ? w / 80
-                                                          : w / 30,
+                                                      color: Colors.blue,
+                                                      fontFamily: "NexaBold",
+                                                      fontSize:
+                                                          kIsWeb ? 25 : w / 30,
                                                     ),
                                                   ),
                                                   shape:
@@ -652,10 +703,12 @@ class _ClientPageState extends State<ClientPage> {
                                                         Text(
                                                           'Date:',
                                                           style: TextStyle(
-                                                            fontSize:
-                                                                isWeb(context)
-                                                                    ? w / 80
-                                                                    : w / 30,
+                                                            color: Colors.black,
+                                                            fontFamily:
+                                                                "NexaBold",
+                                                            fontSize: kIsWeb
+                                                                ? 25
+                                                                : w / 30,
                                                           ),
                                                         ),
                                                         ElevatedButton.icon(
@@ -684,10 +737,12 @@ class _ClientPageState extends State<ClientPage> {
                                                         Text(
                                                           'Time:',
                                                           style: TextStyle(
-                                                            fontSize:
-                                                                isWeb(context)
-                                                                    ? w / 80
-                                                                    : w / 30,
+                                                            color: Colors.black,
+                                                            fontFamily:
+                                                                "NexaBold",
+                                                            fontSize: kIsWeb
+                                                                ? 25
+                                                                : w / 30,
                                                           ),
                                                         ),
                                                         ElevatedButton.icon(
@@ -718,46 +773,132 @@ class _ClientPageState extends State<ClientPage> {
                                                             ),
                                                           ),
                                                         ),
-                                                        Text(
-                                                          'Select Services:',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                isWeb(context)
-                                                                    ? w / 80
-                                                                    : w / 30,
-                                                          ),
-                                                        ),
                                                         Expanded(
-                                                          child: ListView(
-                                                            children:
-                                                                _ClientPageState
-                                                                    .salonServices
-                                                                    .map(
-                                                                        (service) {
-                                                              return CheckboxListTile(
-                                                                title: Text(
-                                                                    service),
-                                                                value: selectedServices
-                                                                    .contains(
-                                                                        service),
+                                                          child: Column(
+                                                            children: [
+                                                              Text(
+                                                                'Select Services',
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontFamily:
+                                                                      "NexaBold",
+                                                                  fontSize:
+                                                                      kIsWeb
+                                                                          ? 25
+                                                                          : w /
+                                                                              30,
+                                                                ),
+                                                              ),
+                                                              TextField(
                                                                 onChanged:
-                                                                    (bool?
-                                                                        value) {
+                                                                    (query) {
                                                                   setState(() {
-                                                                    if (value !=
-                                                                        null) {
-                                                                      if (value) {
-                                                                        selectedServices
-                                                                            .add(service); // Check the checkbox
-                                                                      } else {
-                                                                        selectedServices
-                                                                            .remove(service); // Uncheck the checkbox
-                                                                      }
-                                                                    }
+                                                                    // Filter the available items based on the query
+                                                                    fetchedServices =
+                                                                        allItems
+                                                                            .where((item) {
+                                                                      return item
+                                                                          .toLowerCase()
+                                                                          .contains(
+                                                                              query.toLowerCase());
+                                                                    }).toList();
                                                                   });
                                                                 },
-                                                              );
-                                                            }).toList(),
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                  labelText:
+                                                                      'Search Services',
+                                                                  labelStyle:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        "NexaBold",
+                                                                    fontSize: kIsWeb
+                                                                        ? 20
+                                                                        : w /
+                                                                            25,
+                                                                  ),
+                                                                  prefixIcon:
+                                                                      const Icon(
+                                                                    Icons
+                                                                        .search,
+                                                                    size: 30,
+                                                                    color: Colors
+                                                                        .blue,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              // Display the list of available items using ListView.builder
+                                                              fetchedServices
+                                                                      .isEmpty
+                                                                  ? Center(
+                                                                      child:
+                                                                          Text(
+                                                                        'No services found',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          color:
+                                                                              Colors.black,
+                                                                          fontFamily:
+                                                                              "NexaBold",
+                                                                          fontSize: kIsWeb
+                                                                              ? 25
+                                                                              : w / 30,
+                                                                        ),
+                                                                      ),
+                                                                    )
+                                                                  : SizedBox(
+                                                                      height: MediaQuery.of(context)
+                                                                              .size
+                                                                              .height *
+                                                                          0.4, // Specify a fixed height for the list
+                                                                      child: ListView
+                                                                          .builder(
+                                                                        shrinkWrap:
+                                                                            true,
+                                                                        itemCount:
+                                                                            fetchedServices.length,
+                                                                        itemBuilder:
+                                                                            (context,
+                                                                                index) {
+                                                                          final item =
+                                                                              fetchedServices[index];
+                                                                          return CheckboxListTile(
+                                                                            title:
+                                                                                Text(
+                                                                              item,
+                                                                              style: TextStyle(
+                                                                                color: Colors.blue,
+                                                                                fontFamily: "NexaBold",
+                                                                                fontSize: kIsWeb ? 20 : w / 25,
+                                                                              ),
+                                                                            ),
+                                                                            value:
+                                                                                selectedItems.contains(item),
+                                                                            checkboxShape:
+                                                                                RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.circular(5),
+                                                                            ),
+                                                                            activeColor:
+                                                                                Colors.blue,
+                                                                            onChanged:
+                                                                                (value) {
+                                                                              setState(() {
+                                                                                if (value == true) {
+                                                                                  selectedItems.add(item);
+                                                                                } else {
+                                                                                  selectedItems.remove(item);
+                                                                                }
+                                                                              });
+                                                                            },
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    ),
+                                                            ],
                                                           ),
                                                         ),
                                                         Row(
@@ -771,7 +912,7 @@ class _ClientPageState extends State<ClientPage> {
                                                                     phoneNumber,
                                                                     selectedDate,
                                                                     selectedTime,
-                                                                    selectedServices);
+                                                                    selectedItems);
                                                                 Navigator.of(
                                                                         scaffoldKey
                                                                             .currentContext!)
@@ -781,11 +922,15 @@ class _ClientPageState extends State<ClientPage> {
                                                                 'OK',
                                                                 style:
                                                                     TextStyle(
-                                                                  fontSize: _ClientPageState()
-                                                                          .isWeb(
-                                                                              context)
-                                                                      ? w / 60
-                                                                      : w / 30,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontFamily:
+                                                                      "NexaBold",
+                                                                  fontSize:
+                                                                      kIsWeb
+                                                                          ? 22
+                                                                          : w /
+                                                                              30,
                                                                 ),
                                                               ),
                                                             ),
@@ -802,11 +947,15 @@ class _ClientPageState extends State<ClientPage> {
                                                                 'Cancel',
                                                                 style:
                                                                     TextStyle(
-                                                                  fontSize: _ClientPageState()
-                                                                          .isWeb(
-                                                                              context)
-                                                                      ? w / 60
-                                                                      : w / 30,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontFamily:
+                                                                      "NexaBold",
+                                                                  fontSize:
+                                                                      kIsWeb
+                                                                          ? 22
+                                                                          : w /
+                                                                              30,
                                                                 ),
                                                               ),
                                                             ),
@@ -825,11 +974,14 @@ class _ClientPageState extends State<ClientPage> {
                                       label: Text(
                                         'Add',
                                         style: TextStyle(
-                                          fontSize:
-                                              _ClientPageState().isWeb(context)
-                                                  ? w / 60
-                                                  : w / 30,
-                                        ),
+                                            fontFamily: "NexaBold",
+                                            fontSize: kIsWeb
+                                                ? 22
+                                                : MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    25,
+                                            color: Colors.white),
                                       ),
                                     ),
                                     const SizedBox(height: 20),
@@ -839,26 +991,17 @@ class _ClientPageState extends State<ClientPage> {
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData ||
                                               snapshot.data!.docs.isEmpty) {
-                                            // return Text(
-                                            //   'No data available',
-                                            //   style: TextStyle(
-                                            //     fontSize: _ClientPageState()
-                                            //             .isWeb(context)
-                                            //         ? w / 60
-                                            //         : w / 30,
-                                            //   ),
-                                            // );
-                                            return Lottie.asset(
-                                              'assets/documents.json',
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.5,
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height *
-                                                  0.2,
-                                              fit: BoxFit.fill,
+                                            return Text(
+                                              'No data available',
+                                              style: TextStyle(
+                                                  fontFamily: "NexaBold",
+                                                  fontSize: kIsWeb
+                                                      ? 18
+                                                      : MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          25,
+                                                  color: Colors.black),
                                             );
                                           }
 
@@ -875,8 +1018,18 @@ class _ClientPageState extends State<ClientPage> {
                                               reminder['reminders'];
 
                                           if (reminders.isEmpty) {
-                                            return const Text(
-                                                'No reminders is set');
+                                            return Text(
+                                              'No reminders is set',
+                                              style: TextStyle(
+                                                  fontFamily: "NexaBold",
+                                                  fontSize: kIsWeb
+                                                      ? 22
+                                                      : MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          25,
+                                                  color: Colors.black),
+                                            );
                                           }
 
                                           return ListView.builder(
@@ -911,13 +1064,15 @@ class _ClientPageState extends State<ClientPage> {
                                                   title: Text(
                                                     'Reminder set for $date at $time for ${services.join(", ")}',
                                                     style: TextStyle(
-                                                      fontSize:
-                                                          _ClientPageState()
-                                                                  .isWeb(
-                                                                      context)
-                                                              ? w / 60
-                                                              : w / 35,
-                                                    ),
+                                                        fontFamily: "NexaBold",
+                                                        fontSize: kIsWeb
+                                                            ? 22
+                                                            : MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width /
+                                                                25,
+                                                        color: Colors.black),
                                                   ),
                                                   trailing: IconButton(
                                                     icon: const Icon(
@@ -961,10 +1116,11 @@ class _ClientPageState extends State<ClientPage> {
                             title: Text(
                               'Send Reminders',
                               style: TextStyle(
-                                fontSize: _ClientPageState().isWeb(context)
-                                    ? w / 60
-                                    : w / 30,
-                              ),
+                                  fontFamily: "NexaBold",
+                                  fontSize: kIsWeb
+                                      ? 22
+                                      : MediaQuery.of(context).size.width / 25,
+                                  color: Colors.blue),
                             ),
                             content: SizedBox(
                               width: w * 0.4,
@@ -979,26 +1135,17 @@ class _ClientPageState extends State<ClientPage> {
                                         //     ConnectionState.waiting) {}
                                         if (!snapshot.hasData ||
                                             snapshot.data!.docs.isEmpty) {
-                                          // return Text(
-                                          //   'No data available',
-                                          //   style: TextStyle(
-                                          //     fontSize: _ClientPageState()
-                                          //             .isWeb(context)
-                                          //         ? w / 60
-                                          //         : w / 30,
-                                          //   ),
-                                          // );
-                                          return Lottie.asset(
-                                            'assets/documents.json',
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.5,
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.2,
-                                            fit: BoxFit.fill,
+                                          return Text(
+                                            'No data available',
+                                            style: TextStyle(
+                                                fontFamily: "NexaBold",
+                                                fontSize: kIsWeb
+                                                    ? 22
+                                                    : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        25,
+                                                color: Colors.black),
                                           );
                                         }
                                         var clientData = snapshot.data!.docs;
@@ -1007,13 +1154,35 @@ class _ClientPageState extends State<ClientPage> {
 
                                         if (!reminder
                                             .containsKey('reminders')) {
-                                          return const Text('NO DATA FOUND');
+                                          return Text(
+                                            'NO DATA FOUND',
+                                            style: TextStyle(
+                                                fontFamily: "NexaBold",
+                                                fontSize: kIsWeb
+                                                    ? 22
+                                                    : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        25,
+                                                color: Colors.black),
+                                          );
                                         }
                                         Map<String, dynamic> reminders =
                                             reminder['reminders'];
 
                                         if (reminders.isEmpty) {
-                                          return const Text('No reminders set');
+                                          return Text(
+                                            'No reminders set',
+                                            style: TextStyle(
+                                                fontFamily: "NexaBold",
+                                                fontSize: kIsWeb
+                                                    ? 18
+                                                    : MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        25,
+                                                color: Colors.black),
+                                          );
                                         }
 
                                         return ListView.builder(
@@ -1037,13 +1206,16 @@ class _ClientPageState extends State<ClientPage> {
                                                     title: Text(
                                                       'Reminder set for $date at $time for ${services.join(", ")}',
                                                       style: TextStyle(
-                                                        fontSize:
-                                                            _ClientPageState()
-                                                                    .isWeb(
-                                                                        context)
-                                                                ? w / 80
-                                                                : w / 35,
-                                                      ),
+                                                          fontFamily:
+                                                              "NexaBold",
+                                                          fontSize: kIsWeb
+                                                              ? 22
+                                                              : MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width /
+                                                                  25,
+                                                          color: Colors.black),
                                                     ),
                                                     trailing: IconButton(
                                                       onPressed: () async {
@@ -1079,10 +1251,12 @@ class _ClientPageState extends State<ClientPage> {
                                 child: Text(
                                   'Close',
                                   style: TextStyle(
-                                    fontSize: _ClientPageState().isWeb(context)
-                                        ? w / 80
-                                        : w / 45,
-                                  ),
+                                      fontFamily: "NexaBold",
+                                      fontSize: kIsWeb
+                                          ? 18
+                                          : MediaQuery.of(context).size.width /
+                                              25,
+                                      color: Colors.black),
                                 ),
                               ),
                             ],
@@ -1393,7 +1567,7 @@ class _ClientPageState extends State<ClientPage> {
     );
   }
 
-  double calculateTotalSpend(List<String> selectedServices) {
+  double calculateTotalSpend(List<String> selectedItems) {
     // Define the prices for each service
     final Map<String, double> servicePrices = {
       'Haircut': 20.0,
@@ -1406,7 +1580,7 @@ class _ClientPageState extends State<ClientPage> {
 
     double totalSpend = 0.0;
 
-    for (String service in selectedServices) {
+    for (String service in selectedItems) {
       if (servicePrices.containsKey(service)) {
         totalSpend += servicePrices[service]!;
       }
@@ -1448,7 +1622,7 @@ class _ClientPageState extends State<ClientPage> {
                         labelStyle: TextStyle(
                           fontFamily: "NexaBold",
                           fontSize: _ClientPageState().isWeb(context)
-                              ? w / 30
+                              ? w / 80
                               : w / 18,
                           color: Colors.grey,
                         ),
@@ -1461,41 +1635,12 @@ class _ClientPageState extends State<ClientPage> {
                         labelStyle: TextStyle(
                           fontFamily: "NexaBold",
                           fontSize: _ClientPageState().isWeb(context)
-                              ? w / 30
+                              ? w / 80
                               : w / 18,
                           color: Colors.grey,
                         ),
                       ),
                     ),
-                    // Expanded(
-                    //   child: ListView(
-                    //     children: salonServices.map((service) {
-                    //       return CheckboxListTile(
-                    //         title: Text(
-                    //           service,
-                    //           style: TextStyle(
-                    //             fontSize: _ClientPageState().isWeb(context)
-                    //                 ? w / 60
-                    //                 : w / 30,
-                    //           ),
-                    //         ),
-                    //         value: serviceCheckboxes[service] ?? false,
-                    //         onChanged: (bool? value) {
-                    //           setStateInsideDialog(() {
-                    //             serviceCheckboxes[service] = value ?? false;
-                    //           });
-                    //         },
-                    //       );
-                    //     }).toList(),
-                    //   ),
-                    // ),
-                    // Text(
-                    //   'Total Spend: \$${calculateTotalSpend(serviceCheckboxes.keys.where((key) => serviceCheckboxes[key]!).toList()).toStringAsFixed(2)}',
-                    //   style: TextStyle(
-                    //     fontSize:
-                    //         _ClientPageState().isWeb(context) ? w / 60 : w / 20,
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
