@@ -1,4 +1,5 @@
 import 'package:artisan/attendance/loginscreen.dart';
+import 'package:artisan/components/artisan_list.dart';
 import 'package:artisan/main.dart';
 import 'package:artisan/pages/add_services.dart';
 import 'package:artisan/pages/attendance.dart';
@@ -31,9 +32,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double w = MediaQuery.of(context).size.width;
+    bool isLessThan960() {
+      if (w < 960) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: TextStyle(
+              fontFamily: "NexaBold",
+              color: Colors.white,
+              fontSize: kIsWeb
+                  ? isLessThan960()
+                      ? w / 20
+                      : 24
+                  : w / 20),
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -48,154 +68,56 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: const Icon(Icons.logout))
         ],
       ),
-      body: Column(
-        children: [
-          GestureDetector(
-            onTap: () {
-              // launchWhatsAppUri();
-              // Navigate to the client page here
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const ClientPage(),
-              ));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage: AssetImage('assets/images/client.jpg'),
-                  ),
-                  SizedBox(width: 16.0),
-                  Text(
-                    'Clients \n ',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ],
-              ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ArtisanListItem(
+              onNavigate: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const ClientPage(),
+                ));
+              },
+              asset: 'assets/images/client.jpg',
+              artisanListItemName: 'Clients \n ',
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const Billing(),
-              ));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage: AssetImage('assets/images/billing.jpg'),
-                  ),
-                  SizedBox(width: 16.0),
-                  Text(
-                    'Billing',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ],
-              ),
+            ArtisanListItem(
+              onNavigate: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const Billing(),
+                ));
+              },
+              asset: 'assets/images/billing.jpg',
+              artisanListItemName: 'Billing',
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              // Navigate to the services page here
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const AttendanceForTheDay(),
-              ));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage:
-                        AssetImage('assets/images/attendance_day.jpeg'),
-                  ),
-                  SizedBox(width: 16.0),
-                  Text(
-                    'Attendance for the day',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ],
-              ),
+            ArtisanListItem(
+              onNavigate: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const AttendanceForTheDay(),
+                ));
+              },
+              asset: 'assets/images/attendance_day.jpeg',
+              artisanListItemName: 'Attendance for the day',
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const Attendance(),
-              ));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage: AssetImage('assets/images/attendance.jpg'),
-                  ),
-                  SizedBox(width: 16.0),
-                  Text(
-                    'Total Employee Attendance History',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ],
-              ),
+            ArtisanListItem(
+              onNavigate: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const Attendance(),
+                ));
+              },
+              asset: 'assets/images/attendance.jpg',
+              artisanListItemName: 'Total Employee Attendance History',
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              // Navigate to the services page here
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const AddServices(),
-              ));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30.0,
-                    backgroundImage: AssetImage('assets/images/services.jpeg'),
-                  ),
-                  SizedBox(width: 16.0),
-                  Text(
-                    'Add Services',
-                    style: TextStyle(fontSize: 24.0),
-                  ),
-                ],
-              ),
+            ArtisanListItem(
+              onNavigate: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const AddServices(),
+                ));
+              },
+              asset: 'assets/images/services.jpeg',
+              artisanListItemName: 'Add Services',
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
