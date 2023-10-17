@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     radius: 30.0,
-                    backgroundImage: AssetImage('your_avatar_image.png'),
+                    backgroundImage: AssetImage('assets/images/client.jpg'),
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     radius: 30.0,
-                    backgroundImage: AssetImage('your_avatar_image.png'),
+                    backgroundImage: AssetImage('assets/images/billing.jpg'),
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -126,7 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     radius: 30.0,
-                    backgroundImage: AssetImage('your_avatar_image.png'),
+                    backgroundImage:
+                        AssetImage('assets/images/attendance_day.jpeg'),
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -154,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     radius: 30.0,
-                    backgroundImage: AssetImage('your_avatar_image.png'),
+                    backgroundImage: AssetImage('assets/images/attendance.jpg'),
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -183,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     radius: 30.0,
-                    backgroundImage: AssetImage('your_avatar_image.png'),
+                    backgroundImage: AssetImage('assets/images/services.jpeg'),
                   ),
                   SizedBox(width: 16.0),
                   Text(
@@ -194,32 +195,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          // GestureDetector(
-          //   onTap: () {
-          //     // Navigate to the client page here
-          //   },
-          //   child: Container(
-          //     padding: const EdgeInsets.all(16.0),
-          //     decoration: const BoxDecoration(
-          //       border: Border(
-          //         bottom: BorderSide(color: Colors.grey),
-          //       ),
-          //     ),
-          //     child: const Row(
-          //       children: [
-          //         CircleAvatar(
-          //           radius: 30.0,
-          //           backgroundImage: AssetImage('your_avatar_image.png'),
-          //         ),
-          //         SizedBox(width: 16.0),
-          //         Text(
-          //           'Client Appointments \n - 3 appointments for today',
-          //           style: TextStyle(fontSize: 24.0),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
