@@ -1347,6 +1347,7 @@ class _ClientPageState extends State<ClientPage> {
               child: Text(
                 'Close',
                 style: TextStyle(
+                    fontFamily: "NexaBold",
                     fontSize:
                         kIsWeb ? 18 : MediaQuery.of(context).size.width / 25,
                     color: Colors.blue),
@@ -1387,18 +1388,46 @@ class _ClientPageState extends State<ClientPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Client Name: $name',
-                style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+              RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                  text: 'Client Name: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
                 ),
-              ),
-              Text(
-                'Total Visits: ${visitDates.length}',
-                style: TextStyle(
-                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                TextSpan(
+                  text: name,
+                  style: TextStyle(
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
                 ),
-              ),
+              ])),
+              RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                  text: 'Total Visits: ',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
+                ),
+                TextSpan(
+                  text: '${visitDates.length}',
+                  style: TextStyle(
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
+                ),
+              ])),
               SizedBox(
                 height: 200,
                 width: 300,
@@ -1536,31 +1565,72 @@ class _ClientPageState extends State<ClientPage> {
       String visitDate, List<String> pastServices, String pastAmounts) {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
+    DateTime dateTime = DateTime.parse(visitDate);
+    DateFormat outputFormat = DateFormat("dd-MM-yyyy");
+    String formattedDate = outputFormat.format(dateTime);
     return Card(
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Visit Date: $visitDate',
-              style: TextStyle(
-                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Visit Date:',
+                style: TextStyle(
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                    fontFamily: 'NexaBold',
+                    color: Colors.blue),
               ),
-            ),
-            Text(
-              'Past Services: ${pastServices.join(", ")}',
-              style: TextStyle(
-                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+              TextSpan(
+                text: formattedDate,
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  fontFamily: 'NexaBold',
+                ),
+              )
+            ])),
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Past Services:',
+                style: TextStyle(
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                    fontFamily: 'NexaBold',
+                    color: Colors.blue),
               ),
-            ),
-            Text(
-              'Amount Spent: $pastAmounts',
-              style: TextStyle(
-                fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
-              ),
-            ),
+              TextSpan(
+                text: ' ${pastServices.join(", ")}',
+                style: TextStyle(
+                  fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  fontFamily: 'NexaBold',
+                ),
+              )
+            ])),
+            RichText(
+              text: TextSpan(children: [
+                TextSpan(
+                  text: 'Amount Spent:',
+                  style: TextStyle(
+                      fontSize:
+                          _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                      fontFamily: 'NexaBold',
+                      color: Colors.blue),
+                ),
+                TextSpan(
+                  text: ' ₹$pastAmounts',
+                  style: TextStyle(
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                    fontFamily: 'NexaBold',
+                  ),
+                )
+              ]),
+            )
           ],
         ),
       ),

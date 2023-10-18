@@ -48,9 +48,9 @@ class ArtisanListItem extends StatelessWidget {
                   color: Colors.blue,
                   fontSize: kIsWeb
                       ? isLessThan960()
-                          ? w / 30
+                          ? w / 25
                           : 25
-                      : w / 30),
+                      : w / 25),
             ),
           ],
         ),
