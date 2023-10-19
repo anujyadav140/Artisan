@@ -182,7 +182,6 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
                               List<String> parts = employeeNames[i].split('-');
                               if (parts.length >= 3) {
                                 employeeId = parts[2].trim();
-                                print(employeeId);
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -231,10 +230,8 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
   }
 
   void renderEmployeeAttendanceDetails(String id) {
-    print(id);
     final presentDate = DateTime.now();
     final formattedPresentDate = DateFormat('dd MMMM y').format(presentDate);
-    print(formattedPresentDate);
     Future<DocumentSnapshot<Map<String, dynamic>>> selectedDateAttendance =
         FirebaseFirestore.instance
             .collection("Employee")
@@ -275,50 +272,81 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              checkInTime == "" ? "None" : checkInTime,
-              style: TextStyle(
-                fontFamily: "NexaRegular",
-                fontSize: kIsWeb ? 18 : screenWidth / 30,
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Check in time: ',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
               ),
-            ),
-            Text(
-              checkOutTime == "" ? "None" : checkOutTime,
-              style: TextStyle(
-                fontFamily: "NexaRegular",
-                fontSize: kIsWeb ? 18 : screenWidth / 30,
+              TextSpan(
+                text: checkInTime == "" ? "None" : checkInTime,
+                style: TextStyle(
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
               ),
-            ),
-            Text(
-              checkOutLocation == "" ? "None" : checkOutLocation,
-              style: TextStyle(
-                fontFamily: "NexaRegular",
-                fontSize: kIsWeb ? 18 : screenWidth / 30,
+            ])),
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Check out time: ',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
               ),
-            ),
-            Text(
-              checkInLocation == "" ? "None" : checkInLocation,
-              style: TextStyle(
-                fontFamily: "NexaRegular",
-                fontSize: kIsWeb ? 18 : screenWidth / 30,
+              TextSpan(
+                text: checkOutTime == "" ? "None" : checkOutTime,
+                style: TextStyle(
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
               ),
-            ),
+            ])),
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Check in location: ',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
+              ),
+              TextSpan(
+                text: checkOutLocation == "" ? "None" : checkOutLocation,
+                style: TextStyle(
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
+              ),
+            ])),
+            RichText(
+                text: TextSpan(children: [
+              TextSpan(
+                text: 'Check out location: ',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
+              ),
+              TextSpan(
+                text: checkInLocation == "" ? "None" : checkInLocation,
+                style: TextStyle(
+                  fontFamily: "NexaBold",
+                  fontSize: kIsWeb ? 18 : screenWidth / 30,
+                ),
+              ),
+            ])),
           ],
         ),
       ),
-      // actions: <Widget>[
-      //   TextButton(
-      //     onPressed: () {
-      //       Navigator.of(context).pop(); // Close the dialog
-      //     },
-      //     child: Text(
-      //       "Close",
-      //       style: TextStyle(
-      //         fontFamily: "NexaBold",
-      //       ),
-      //     ),
-      //   ),
-      // ],
     );
   }
 
