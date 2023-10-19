@@ -1,18 +1,10 @@
-import 'dart:convert';
 import 'dart:math';
-import 'package:artisan/services/authentication/auth_service.dart';
-import 'package:artisan/services/client_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'dart:typed_data';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 
 class BillingGeneration extends StatefulWidget {
   const BillingGeneration(
@@ -236,14 +228,14 @@ class _BillingGenerationState extends State<BillingGeneration> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                  'Discount: \$${widget.discount.toStringAsFixed(2)}'),
+                                  'Discount: ₹${widget.discount.toStringAsFixed(2)}'),
                               Text(
-                                  'Tax: \$${(tax / 100 * calculateTotal(widget.servicePrices, widget.discount, tax)).toStringAsFixed(2)}'),
+                                  'Tax: ₹${(tax / 100 * calculateTotal(widget.servicePrices, widget.discount, tax)).toStringAsFixed(2)}'),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Total: \$${calculateTotal(widget.servicePrices, widget.discount, tax).toStringAsFixed(2)}',
+                            'Total: ₹${calculateTotal(widget.servicePrices, widget.discount, tax).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
