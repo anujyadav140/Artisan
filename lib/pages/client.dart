@@ -1402,6 +1402,7 @@ class _ClientPageState extends State<ClientPage> {
                 TextSpan(
                   text: name,
                   style: TextStyle(
+                    color: Colors.black,
                     fontFamily: "NexaBold",
                     fontSize:
                         _ClientPageState().isWeb(context) ? w / 60 : w / 30,
@@ -1422,6 +1423,7 @@ class _ClientPageState extends State<ClientPage> {
                 TextSpan(
                   text: '${visitDates.length}',
                   style: TextStyle(
+                    color: Colors.black,
                     fontFamily: "NexaBold",
                     fontSize:
                         _ClientPageState().isWeb(context) ? w / 60 : w / 30,
@@ -1588,6 +1590,7 @@ class _ClientPageState extends State<ClientPage> {
               TextSpan(
                 text: formattedDate,
                 style: TextStyle(
+                  color: Colors.black,
                   fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                   fontFamily: 'NexaBold',
                 ),
@@ -1606,6 +1609,7 @@ class _ClientPageState extends State<ClientPage> {
               TextSpan(
                 text: ' ${pastServices.join(", ")}',
                 style: TextStyle(
+                  color: Colors.black,
                   fontSize: _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                   fontFamily: 'NexaBold',
                 ),
@@ -1624,6 +1628,7 @@ class _ClientPageState extends State<ClientPage> {
                 TextSpan(
                   text: ' ₹$pastAmounts',
                   style: TextStyle(
+                    color: Colors.black,
                     fontSize:
                         _ClientPageState().isWeb(context) ? w / 60 : w / 30,
                     fontFamily: 'NexaBold',

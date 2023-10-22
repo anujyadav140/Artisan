@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ));
               },
               asset: 'assets/images/attendance.jpg',
-              artisanListItemName: 'Employee Attendance History',
+              artisanListItemName: 'Attendance History',
             ),
             ArtisanListItem(
               onNavigate: () {

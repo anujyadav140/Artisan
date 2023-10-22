@@ -261,7 +261,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
     double screenWidth = MediaQuery.of(context).size.width;
     return AlertDialog(
       title: Text(
-        "Employee Attendance Details",
+        "Attendance Details",
         style: TextStyle(
           color: Colors.blue,
           fontSize: kIsWeb ? 25 : screenWidth / 30,
@@ -285,6 +285,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
               TextSpan(
                 text: checkInTime == "" ? "None" : checkInTime,
                 style: TextStyle(
+                  color: Colors.black,
                   fontFamily: "NexaBold",
                   fontSize: kIsWeb ? 18 : screenWidth / 30,
                 ),
@@ -303,6 +304,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
               TextSpan(
                 text: checkOutTime == "" ? "None" : checkOutTime,
                 style: TextStyle(
+                  color: Colors.black,
                   fontFamily: "NexaBold",
                   fontSize: kIsWeb ? 18 : screenWidth / 30,
                 ),
@@ -321,6 +323,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
               TextSpan(
                 text: checkOutLocation == "" ? "None" : checkOutLocation,
                 style: TextStyle(
+                  color: Colors.black,
                   fontFamily: "NexaBold",
                   fontSize: kIsWeb ? 18 : screenWidth / 30,
                 ),
@@ -339,6 +342,7 @@ class _AttendanceForTheDayState extends State<AttendanceForTheDay> {
               TextSpan(
                 text: checkInLocation == "" ? "None" : checkInLocation,
                 style: TextStyle(
+                  color: Colors.black,
                   fontFamily: "NexaBold",
                   fontSize: kIsWeb ? 18 : screenWidth / 30,
                 ),

@@ -101,7 +101,13 @@ class _BillingGenerationState extends State<BillingGeneration> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        title: const Text("Billing Generation"),
+        title: Text(
+          "Billing Generation",
+          style: TextStyle(
+            fontFamily: "NexaBold",
+            fontSize: isWeb(context) ? w / 80 : w / 20,
+          ),
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
