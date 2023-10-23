@@ -1226,6 +1226,13 @@ class _ClientPageState extends State<ClientPage> {
                                                           time,
                                                           services,
                                                         );
+                                                        ClientService()
+                                                            .deleteReminder(
+                                                          phoneNumber,
+                                                          reminderKey,
+                                                        );
+                                                        Navigator.of(context)
+                                                            .pop();
                                                       },
                                                       icon: const Icon(
                                                           Icons.send),
@@ -1279,8 +1286,22 @@ class _ClientPageState extends State<ClientPage> {
   void launchWhatsAppUri(String number, String lastVisitDate, String date,
       String time, List<String> services) async {
     final phoneNumber = "+91-$number";
-    final message = "Hey, Your last visit date was on: $lastVisitDate\n"
-        "You have an appointment on $date at $time for the following services: ${services.join(', ')}\n"
+
+    final parsedLastVisitDate = DateTime.parse(lastVisitDate);
+    final parsedDate = DateTime.parse(date);
+
+    final formattedLastVisitDate =
+        DateFormat('dd-MM-yyyy').format(parsedLastVisitDate);
+    final formattedDate = DateFormat('dd-MM-yyyy').format(parsedDate);
+
+    // final message =
+    //     "Hey, Your last visit date was on: $formattedLastVisitDate\n"
+    //     "You have an appointment on $formattedDate at $time for the following services: ${services.join(', ')}\n"
+    //     "Best regards,\nArtisan";
+    final message = "Hello,\n\n"
+        "We've missed you at Artisan Hair Salon! It's been a while since your last visit on $formattedLastVisitDate. "
+        "We believe it's the perfect time for you to come in for some of our exceptional services.\n\n"
+        "You can come visit us on $formattedDate at $time, where we can provide you with a ${services.join(', ')}. \n\n"
         "Best regards,\nArtisan";
 
     final link = WhatsAppUnilink(
@@ -1361,6 +1382,13 @@ class _ClientPageState extends State<ClientPage> {
 
   void _showStatisticsDialog(String name, List<String> visitDates,
       List<String> pastAmounts, List<List<String>> servicesList) {
+    double averageSpent = 0.0;
+    if (pastAmounts.isNotEmpty) {
+      double totalSpent = pastAmounts
+          .map((amount) => double.parse(amount))
+          .reduce((a, b) => a + b);
+      averageSpent = totalSpent / pastAmounts.length;
+    }
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     List<dynamic> _generateLineChartData(List<dynamic> pastAmounts) {
@@ -1422,6 +1450,27 @@ class _ClientPageState extends State<ClientPage> {
                 ),
                 TextSpan(
                   text: '${visitDates.length}',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
+                ),
+              ])),
+              RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                  text: 'Average Spent:',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontFamily: "NexaBold",
+                    fontSize:
+                        _ClientPageState().isWeb(context) ? w / 60 : w / 30,
+                  ),
+                ),
+                TextSpan(
+                  text: '${averageSpent.toStringAsFixed(2)}₹',
                   style: TextStyle(
                     color: Colors.black,
                     fontFamily: "NexaBold",

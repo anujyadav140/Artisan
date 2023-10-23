@@ -234,7 +234,7 @@ class _BillingGenerationState extends State<BillingGeneration> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                  'Discount: ₹${widget.discount.toStringAsFixed(2)}'),
+                                  'Discount: ${widget.discount.toStringAsFixed(2)}%'),
                               Text(
                                   'Tax: ₹${(tax / 100 * calculateTotal(widget.servicePrices, widget.discount, tax)).toStringAsFixed(2)}'),
                             ],
